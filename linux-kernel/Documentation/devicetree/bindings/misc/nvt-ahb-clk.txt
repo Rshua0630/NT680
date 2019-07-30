@@ -1,0 +1,18 @@
+Novatek ahb clk driver
+-------------------
+
+novatek SoC ahb clk driver for CPU frequency scaling.
+
+Required properties:
+- compatible : "nvt,ahb_clk";
+- reg :        register space
+
+Examples:
+--------
+        ahb_clk: ahb_clk {
+                        compatible = "nvt,ahb_clk";
+                        #clock-cells = <0>;
+                        clock-output-names = "ahb_clk";
+        };
+
+

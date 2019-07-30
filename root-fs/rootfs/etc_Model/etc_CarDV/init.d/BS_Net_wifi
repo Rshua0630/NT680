@@ -1,0 +1,12 @@
+#!/bin/sh
+
+modprobe 8189es
+
+#set essid,psk,...
+wpa_supplicant -B -Dwext -d -i wlan0 -c /etc/wpa_supplicant.conf
+
+#get an ip
+udhcpc -i wlan0
+
+#check got ip
+ifconfig

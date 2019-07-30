@@ -1,0 +1,35 @@
+config MTD_SPINAND
+	tristate "SPINAND Device Support for Micron/winbond"
+	depends on (NVT_NT96660 || MACH_NVT_NA51000) && MTD_NAND
+	help
+	  This enables support for accessing Micron/winbond SPI NAND flash
+	  devices.
+	  If you have Micron/winbond SPI NAND chip say yes.
+
+	  If unsure, say no here.
+
+config MTD_SPINAND_HWECC
+	bool "Use SPINAND Hardware ECC"
+	depends on MTD_SPINAND
+	help
+	  Hardware ECC.
+	  Enables Hardware ECC support for SPI NAND.
+
+config MTD_SPINOR
+	tristate "SPINOR Device Support"
+	depends on (NVT_NT96660 || MACH_NVT_NA51000) && (!MTD_SPINAND)
+	help
+	  This enables support for accessing SPI NOR flash
+	  devices.
+	  If you have SPI NOR chip say yes.
+
+	  If unsure, say no here.
+
+config MTD_EXTERNAL_FLASH_TABLE
+	tristate "Using external flash table"
+	depends on MTD_SPINOR
+	help
+	  This enables support for using external flash table
+	  If you have requrired external table say yes.
+
+	  If unsure, say no here.

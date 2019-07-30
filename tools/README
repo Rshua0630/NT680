@@ -1,0 +1,31 @@
+1. htop 	- Linux Process Monitoring
+		Rootfs:
+		  $cp __install/share/terminfo/ rootfs/usr/share/
+		  $cp __install/bin/htop rootfs/bin/
+		Target board:
+		  $export TERM=xterm
+		  $export TERMINFO=/usr/share/terminfo
+		  $htop
+
+2. gdb		- It can use gdbserver to do remote debug application, or using gdb to do on-target debugging
+
+3. Bonnie++	- This is used to measure the file system IO performance
+		$bonnie++ -d FolderName -r RamSize -s TestingSize -u UID:GID
+
+4. mtd-utils	- This is the MTD device utilities to handle flash read/write, ubifs attach/mount/format
+
+5. memtester	- To handle RAM R/W testing for the stability
+
+6. iperf	- Iperf was developed as a modern alternative for measuring maximum TCP and UDP bandwidth performance. Iperf allows the tuning of various parameters and UDP characteristics.
+		Iperf reports bandwidth, delay jitter, datagram loss. Iperf can run as a client or as a server according to the arguments passed to it. Unlike NetPerf,
+		when using Iperf we need to configure both client and server sides.
+
+7. procps	- slabtop, uptime, watch, vmstat, tload,...etc  tools
+		Target board:
+		  $export TERM=xterm
+		  $export TERMINFO=/usr/share/terminfo
+		  $slabtop
+
+8. mmctest	- To do RAW MMC driver testing, this is the linux kernel feature will test your sd card without file system affection.
+
+9. i2c-tools	- Please refer to http://www.lm-sensors.org/wiki/i2cToolsDocumentation for usage

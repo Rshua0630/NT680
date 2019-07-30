@@ -1,0 +1,1 @@
+obj-$(CONFIG_NT72_NAND_FLASH_CONTROLLER)	+= nt72_nand.o nt72_nand_dt.o nt72_nand_ecc_layouts.o nt72_nand_kapi.o nt72_nand_kernel.o nt72_nand_io.o nt72_nand_ir.o nt72_nand_nfc.o nt72_nand_nfc_init.o nt72_nand_parts.o nt72_nand_plat.o nt72_nand_selftest.o nt72_nand_utils.o

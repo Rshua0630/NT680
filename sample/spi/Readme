@@ -1,0 +1,65 @@
+Using spi_dev for simply verifying spi bus. 
+Before any configuration, please check if you have setup the correct global settings,
+as Pinmux/Interrupt direction. All these settings are located in uitron\DrvExt\DrvExt_src\ModelExt\xxx\independant\*
+
+
+1. Please connect SPI_DO/SPI_DI as HW configuration.
+
+2. Please register a spi_dev device with target SPI bus.
+ #
+ # SPI Protocol Masters
+ #
+-# CONFIG_SPI_SPIDEV is not set
++CONFIG_SPI_SPIDEV=y
+ # CONFIG_SPI_TLE62X0 is not set
+ # CONFIG_SPMI is not set
+ # CONFIG_HSI is not set
+
+>>>>>>>>>>   add a device in device tree <<<<<<<<<<<<<
+
+--- a/linux-kernel/drivers/spi/spidev.c
++++ b/linux-kernel/drivers/spi/spidev.c
+@@ -706,6 +706,7 @@ static struct class *spidev_class;
+ #ifdef CONFIG_OF
+ static const struct of_device_id spidev_dt_ids[] = {
+        { .compatible = "rohm,dh2228fv" },
++       { .compatible = "nvt,spidev" },
+        {},
+ };
+ MODULE_DEVICE_TABLE(of, spidev_dt_ids);
+
+>>>>>>>>>>   add a device in device tree <<<<<<<<<<<<<
+
+--- a/linux-kernel/arch/arm/boot/dts/nvt-na51000-evb-default.dtsi
++++ b/linux-kernel/arch/arm/boot/dts/nvt-na51000-evb-default.dtsi
+@@ -166,6 +166,10 @@
+                compatible = "nvt,nvt_spi";
+                reg = <0xf0320000 0x10000>;
+                interrupts = <GIC_SPI 36 IRQ_TYPE_LEVEL_HIGH>;
++               #address-cells = <0x1>;
++               #size-cells = <0x0>;
++               spidev@0x0
++               { compatible = "nvt,spidev"; reg = <0x0>; spi-max-frequency = <96000000>; };
+         };
+
+        crypto@f0620000 {
+
+3. Send the follwing command to verify if spi bus is set correctly.
+spidev_test -D /dev/spidev0.0 -s 20000000
+
+And the designated pattern will be shown as:
+spi mode: 0
+bits per word: 8
+max speed: 20000000 Hz (20000 KHz)
+
+FF FF FF FF FF FF
+40 00 00 00 00 95
+FF FF FF FF FF FF
+FF FF FF FF FF FF
+FF FF FF FF FF FF
+DE AD BE EF BA AD
+F0 0D
+
+
+
+

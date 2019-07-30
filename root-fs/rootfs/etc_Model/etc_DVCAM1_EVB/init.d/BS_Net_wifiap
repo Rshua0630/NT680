@@ -1,0 +1,14 @@
+#!/bin/sh
+
+modprobe 8189es
+
+echo "Configuring loopback interface"
+ifconfig lo 127.0.0.1
+
+#FOR WiFi Sample
+ifconfig wlan0 up
+ifconfig wlan0 192.168.1.3
+hostapd -B -dd /etc/wifiap_wpa2.conf
+
+#DHCP Deamon
+udhcpd -S /etc/udhcpdw.conf

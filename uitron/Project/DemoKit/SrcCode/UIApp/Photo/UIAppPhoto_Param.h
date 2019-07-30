@@ -1,0 +1,75 @@
+#ifndef _UIAPPPHOTO_PARAM_H
+#define _UIAPPPHOTO_PARAM_H
+#include "GxImage.h"
+#include "ImageApp_Photo.h"
+
+
+#define PHOTO_FMT_420 GX_IMAGE_PIXEL_FMT_YUV420
+#define PHOTO_FMT_422 GX_IMAGE_PIXEL_FMT_YUV422
+#define PHOTO_FMT_Y   GX_IMAGE_PIXEL_FMT_Y_ONLY
+//#define PHOTO_STRM_HEIGHT     ALIGN_CEIL_16(480)
+
+//#define PHOTO_3DNR_MAX_WIDTH  3840
+//#define PHOTO_3DNR_MAX_HEIGHT 2160
+
+
+typedef enum {
+	UIAPP_PHOTO_DISP_ID_1 = 0,
+	UIAPP_PHOTO_DISP_ID_2,
+	UIAPP_PHOTO_DISP_ID_3,
+	UIAPP_PHOTO_DISP_ID_4,
+	UIAPP_PHOTO_DISP_ID_MAX,
+	ENUM_DUMMY4WORD(UIAPP_PHOTO_DISP_ID)
+} UIAPP_PHOTO_DISP_ID;
+
+typedef enum {
+	UIAPP_PHOTO_STRM_ID_1 = 0,
+	UIAPP_PHOTO_STRM_ID_2,
+	UIAPP_PHOTO_STRM_ID_3,
+	UIAPP_PHOTO_STRM_ID_4,
+	UIAPP_PHOTO_STRM_ID_MAX,
+	ENUM_DUMMY4WORD(UIAPP_PHOTO_STRM_ID)
+} UIAPP_PHOTO_STRM_ID;
+
+typedef enum {
+	UIAPP_PHOTO_SENSOR_ID_1 = 0,
+	UIAPP_PHOTO_SENSOR_ID_2,
+	UIAPP_PHOTO_SENSOR_ID_3,
+	UIAPP_PHOTO_SENSOR_ID_4,
+	UIAPP_PHOTO_SENSOR_ID_MAX,
+	ENUM_DUMMY4WORD(UIAPP_PHOTO_SENSOR_ID)
+} UIAPP_PHOTO_SENSOR_ID;
+
+typedef struct {
+	UIAPP_PHOTO_SENSOR_ID  sensor;
+	UINT32                 fps;
+	ISIZE                  sSize;
+	ISIZE                  sRatio;
+	FLIP_TYPE              eFlipType;
+	BOOL                   bIME3DNR;
+	GX_IMAGE_PIXEL_FMT     eVideoFormat[5];
+	BOOL                   bIME1Compress;
+	BOOL				   bCropEnable[5];
+} UIAPP_PHOTO_SENSOR_INFO;
+
+typedef struct{
+	//UIAPPIPCAM_PATH_ID   path;
+	UINT32     uiMaxCodec; //value: MEDIAVIDENC_MJPG, MEDIAVIDENC_H264, MEDIAVIDENC_H265
+	UINT32     uiMaxWidth;
+	UINT32     uiMaxHeight;
+	UINT32 	   uiMaxByteRate;
+	UINT32     uiMaxBufSec;
+	UINT32     uiMaxRecFormat;
+	UINT32     uiMaxSVCLayer;
+	UINT32     uiLTRInterval;
+	UINT32     uiRotate;
+	BOOL       bAllocSnapshotBuf;
+}UIAPP_PHOTO_VIDEO_MAXCONFIG;
+
+extern UIAPP_PHOTO_SENSOR_INFO *UIAppPhoto_get_SensorInfo(UIAPP_PHOTO_SENSOR_ID  sensor_id);
+extern PHOTO_DISP_INFO *UIAppPhoto_get_DispConfig(UIAPP_PHOTO_DISP_ID  disp_id);
+extern PHOTO_STRM_INFO *UIAppPhoto_get_StreamConfig(UIAPP_PHOTO_STRM_ID  strm_id);
+/*
+extern UIAPP_PHOTO_VIDEO_MAXCONFIG *UIAppPhoto_get_VdoMaxConfig(void);
+*/
+#endif

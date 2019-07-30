@@ -1,0 +1,31 @@
+/*
+    Copyright   Novatek Microelectronics Corp. 2005~2014.  All rights reserved.
+
+    @file       ImageUnit_MediaPlay.h
+
+    @note       Nothing.
+
+    @date       2017/10/01
+*/
+
+#ifndef IMAGEUNIT_MEDIAPLAY_H
+#define IMAGEUNIT_MEDIAPLAY_H
+
+#include "ImageStream.h"
+
+enum {
+	MEDIAPLAY_PARAM_START = 0x0000A000,
+	MEDIAPLAY_PARAM_FILEHDL = MEDIAPLAY_PARAM_START,
+	MEDIAPLAY_PARAM_CURSPD,
+	MEDIAPLAY_PARAM_CURDIR,
+	MEDIAPLAY_PARAM_EVENTCB,
+	MEDIAPLAY_PARAM_PAUSE,
+	MEDIAPLAY_PARAM_RESUME,
+	MEDIAPLAY_PARAM_STEPPLAY,
+	MEDIAPLAY_PARAM_MAX_MEM_INFO,
+};
+
+extern ISF_UNIT ISF_MediaPlay;
+
+#endif //IMAGEUNIT_MEDIAPLAY_680_H
+

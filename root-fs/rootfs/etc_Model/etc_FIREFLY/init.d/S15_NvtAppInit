@@ -1,0 +1,9 @@
+#!/bin/sh
+# System Daemon Run
+echo "nvtapp" > /proc/nvt_info/bootts
+usbipc &
+
+# init tunning tool
+uctrl usys -msdcnvt 1
+
+echo "nvtapp" > /proc/nvt_info/bootts

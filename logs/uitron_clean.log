@@ -1,0 +1,14 @@
+make[1]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/uitron/MakeCommon'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/uitron/DrvExt'
+Clean DrvExt ...
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/uitron/DrvExt'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/uitron/LibExt'
+Clean LibExt ...
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/uitron/LibExt'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/uitron/Alg'
+Clean Alg ...
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/uitron/Alg'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/uitron/Project/DemoKit'
+Clean DemoKit ...
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/uitron/Project/DemoKit'
+make[1]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/uitron/MakeCommon'

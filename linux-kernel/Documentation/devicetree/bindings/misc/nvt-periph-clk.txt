@@ -1,0 +1,18 @@
+Novatek periphal clk driver
+-------------------
+
+novatek SoC periphal clk driver for CPU frequency scaling.
+
+Required properties:
+- compatible : "nvt,periph_clk";
+- reg :        register space
+
+Examples:
+--------
+        periph_clk: periph_clk {
+                        compatible = "nvt,periph_clk";
+                        #clock-cells = <0>;
+                        clock-output-names = "periph_clk";
+        };
+
+

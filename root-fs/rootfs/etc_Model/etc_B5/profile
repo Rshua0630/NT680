@@ -1,0 +1,24 @@
+# /etc/profile: system-wide .profile file for the Bourne shell (sh(1))
+# and Bourne compatible shells (bash(1), ksh(1), ash(1), ...).
+
+# source profile_prjcfg on /etc/init.d/rcS (init script cycle) and /etc/profile (after startup cycle)
+source /etc/profile_prjcfg
+export PATH="/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/bin:/sbin"
+export LD_LIBRARY_PATH="/lib:/usr/local/lib:/usr/lib"
+export TERMINFO=/usr/share/terminfo
+export LD_PRELOAD="libnvtlibc.so"
+
+if [ -f /etc/hostname ]; then
+	/bin/hostname -F /etc/hostname
+fi
+
+# coredump setting
+echo 1 > /proc/sys/kernel/core_uses_pid
+ulimit -c unlimited
+echo "/var/log/core-%e-%p-%t" > /proc/sys/kernel/core_pattern
+
+export HOSTNAME=`/bin/hostname`
+
+export PS1='\u@\h:\w$ '
+
+echo "$HOSTNAME Linux shell..."

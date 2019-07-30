@@ -1,0 +1,175 @@
+#----------------------------------------------------------------------
+# Local variable to determine create library or binary file
+#----------------------------------------------------------------------
+OUTPUT_FILE = LIB
+
+#----------------------------------------------------------------------
+# include make common and make option files
+#----------------------------------------------------------------------
+ifeq "$(OPTION_LOADED)" ""
+    include $(MAKE_COMMON_DIR)/MakeOption.txt
+    LOCAL_CLEAN_LOG = $(CLEAN_LOG)
+else
+    LOCAL_CLEAN_LOG = OFF
+endif
+
+include $(MAKE_COMMON_DIR)/MakeCommon.txt
+
+#----------------------------------------------------------------------
+# set the make outputs
+#----------------------------------------------------------------------
+IMAGE_D = $(IMG_DEBUG)/$(PRJ_NAME)_D.a
+IMAGE_R = $(IMG_RELEASE)/$(PRJ_NAME).a
+
+#----------------------------------------------------------------------
+# set the warning/error log file option
+#----------------------------------------------------------------------
+# $(APP_PATH), $(APPEXT_PATH), $(LIB_PATH), $(LIBEXT_PATH) will be assigned value in MakeCommon.txt
+ifneq "$(ALG_PATH)" ""
+    log_file        := $(subst MakeCommon,Alg/log_Alg.txt,$(MAKE_COMMON_DIR))
+    lint_file       := $(subst MakeCommon,Alg/lint_Alg.txt,$(MAKE_COMMON_DIR))
+    lintopt_file    := options_Alg.lnt
+    lintsum_file    := $(subst MakeCommon,App/lintsum_Alg.txt,$(MAKE_COMMON_DIR))
+else ifneq "$(APP_PATH)" ""
+    log_file        := $(subst MakeCommon,App/log_App.txt,$(MAKE_COMMON_DIR))
+    lint_file       := $(subst MakeCommon,App/lint_App.txt,$(MAKE_COMMON_DIR))
+    lintopt_file    := options_App.lnt
+    lintsum_file    := $(subst MakeCommon,App/lintsum_App.txt,$(MAKE_COMMON_DIR))
+else ifneq "$(APPEXT_PATH)" ""
+    log_file        := $(subst MakeCommon,AppExt/log_AppExt.txt,$(MAKE_COMMON_DIR))
+    lint_file       := $(subst MakeCommon,AppExt/lint_AppExt.txt,$(MAKE_COMMON_DIR))
+    lintopt_file    := options_AppExt.lnt
+    lintsum_file    := $(subst MakeCommon,AppExt/lintsum_AppExt.txt,$(MAKE_COMMON_DIR))
+else ifneq "$(LIB_PATH)" ""
+    log_file        := $(subst MakeCommon,Lib/log_Lib.txt,$(MAKE_COMMON_DIR))
+    lint_file       := $(subst MakeCommon,Lib/lint_Lib.txt,$(MAKE_COMMON_DIR))
+    lintopt_file    := options_Lib.lnt
+    lintsum_file    := $(subst MakeCommon,Lib/lintsum_Lib.txt,$(MAKE_COMMON_DIR))
+else ifneq "$(LIBEXT_PATH)" ""
+    log_file        := $(subst MakeCommon,LibExt/log_LibExt.txt,$(MAKE_COMMON_DIR))
+    lint_file       := $(subst MakeCommon,LibExt/lint_LibExt.txt,$(MAKE_COMMON_DIR))
+    lintopt_file    := options_LibExt.lnt
+    lintsum_file    := $(subst MakeCommon,LibExt/lintsum_LibExt.txt,$(MAKE_COMMON_DIR))
+else ifneq "$(DRV_PATH)" ""
+    log_file        := $(subst MakeCommon,Drv/log_Drv.txt,$(MAKE_COMMON_DIR))
+    lint_file       := $(subst MakeCommon,Drv/lint_Drv.txt,$(MAKE_COMMON_DIR))
+    lintopt_file    := options_Drv.lnt
+    lintsum_file    := $(subst MakeCommon,Drv/lintsum_Drv.txt,$(MAKE_COMMON_DIR))
+else ifneq "$(DRVEXT_PATH)" ""
+    log_file        := $(subst MakeCommon,DrvExt/log_DrvExt.txt,$(MAKE_COMMON_DIR))
+    lint_file       := $(subst MakeCommon,DrvExt/lint_DrvExt.txt,$(MAKE_COMMON_DIR))
+    lintopt_file    := options_DrvExt.lnt
+    lintsum_file    := $(subst MakeCommon,DrvExt/lintsum_DrvExt.txt,$(MAKE_COMMON_DIR))
+else ifneq "$(COM_PATH)" ""
+    log_file        := $(subst MakeCommon,Common/log_Common.txt,$(MAKE_COMMON_DIR))
+    lint_file       := $(subst MakeCommon,Common/lint_Common.txt,$(MAKE_COMMON_DIR))
+    lintopt_file    := options_Common.lnt
+    lintsum_file    := $(subst MakeCommon,Common/lintsum_Common.txt,$(MAKE_COMMON_DIR))
+else ifneq "$(DAL_PATH)" ""
+    log_file        := $(subst MakeCommon,dal/log_dal.txt,$(MAKE_COMMON_DIR))
+    lint_file       := $(subst MakeCommon,dal/lint_dal.txt,$(MAKE_COMMON_DIR))
+    lintopt_file    := options_Common.lnt
+    lintsum_file    := $(subst MakeCommon,dal/lintsum_dal.txt,$(MAKE_COMMON_DIR))
+else
+    log_file        := /dev/null
+    lint_file       := /dev/null
+    lintopt_file    := /dev/null
+    lintsum_file    := /dev/null
+endif
+
+ifeq "$(LOG_ERR)" "ON"
+    LOG_OPTION = 2>>$(log_file)
+    LOG_DATE = date >>$(log_file)
+    LOG_SPACE = echo >>$(log_file)
+endif
+
+#----------------------------------------------------------------------
+# set the make targets
+#----------------------------------------------------------------------
+build_D: make_debug_begin $(IMAGE_D)
+build_R: make_release_begin $(IMAGE_R)
+build_pipe_D: $(IMAGE_D)
+build_pipe_R: $(IMAGE_R)
+
+ifeq "$(ISOLATE_DEP)" "ON"
+build_DEP: make_dep_begin $(ALL_DEP)
+endif
+
+build_LINT: make_lint_begin $(LINT_FILE)
+
+ifeq ($(OS),Linux)
+SHA1_TOOL = $(MAKE_COMMON_DIR)/../tools/nvt-ld-op
+else
+SHA1_TOOL = $(MAKE_COMMON_DIR)/../tools/nvt-ld-op.exe
+endif
+
+$(IMAGE_D): $(ALL_OBJ_D)
+	@echo Creating library $(notdir $@) ... \
+	&& rm -f $(IMAGE_D) \
+	&& $(AR) -crD $@ $^ \
+	&& $(SHA1_TOOL) --arc-sha1 $@
+
+$(IMAGE_R): $(ALL_OBJ_R)
+	@echo Creating library $(notdir $@) ... \
+	&& rm -f $(IMAGE_R) \
+	&& $(AR) -crD $@ $^ \
+	&& $(SHA1_TOOL) --arc-sha1 $@
+
+.PHONY:
+rm_log:
+ifeq "$(LOCAL_CLEAN_LOG)" "ON"
+	@-rm -f $(log_file)
+endif
+
+clean:
+	@-echo Clean $(basename $(notdir $(IMAGE_R))) ... \
+	&& rm -rf --no-preserve-root $(PRJ_NAME)_Data $(log_file) $(lint_file)
+
+ifeq "$(ISOLATE_DEP)" "ON"
+all: rm_log
+	@make dep
+	@make debug
+	@make release
+
+rebuild:
+	@make clean
+	@make dep
+	@make debug
+	@make release
+
+dep: build_DEP
+else
+rebuild: clean build_D build_R
+endif
+
+debug: rm_log make_debug_begin
+ifeq ($(OS),Linux)
+	$(MAKE) build_pipe_D
+else
+	$(MAKE) build_pipe_D $(JOB_FLAGS)
+endif
+
+release: rm_log make_release_begin
+ifeq ($(OS),Linux)
+	$(MAKE) build_pipe_R
+else
+	$(MAKE) build_pipe_R $(JOB_FLAGS)
+endif
+
+rm_lint_log:
+ifeq "$(LOCAL_CLEAN_LOG)" "ON"
+	@-rm -f $(lint_file)
+endif
+
+lint: rm_lint_log build_LINT
+
+lintclean:
+	@-echo Clean  Lint $(basename $(notdir $(IMAGE_R))) checking data ... \
+	&& rm -rf --no-preserve-root $(LINT_DIR) $(lint_file)
+
+# make both library of uITRON and eCos
+both:
+	$(MAKE) clean
+	$(MAKE) release "USE_ECOS_KERNEL=ON"
+	$(MAKE) clean
+	$(MAKE) release "USE_ECOS_KERNEL=OFF"

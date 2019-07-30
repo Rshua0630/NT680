@@ -1,0 +1,8 @@
+ehci@fc1f0000 {
+	compatible = "nvt,NT72668-ehci";
+	//    AHB
+	reg = <0xfc1f0000 0x200>;
+	interrupts = <0 76 4>;
+	id = <0>;
+	usb2phy = <&u2phy_1>;
+};

@@ -1,0 +1,12 @@
+u2phy_1: nvt_usb2_phy@fd170000 {
+	compatible = "nvt,NT72668-usb2phy";
+	//    APB                 PONRST APB		PHY
+	reg = <0xfd170000 0x500>, <0xfd170000 0x500>,
+			<0xfd170400 0x500>;
+	//offset mask value
+	nvt,phy_setting = <0x18 0xe 0x0>,  //TX parameter
+										<0x18 0xc 0xc>,  //TX parameter
+										<0xdc 0x20 0x0>, //timing parameter
+										<0x14 0x3 0x3>;  //dis parameter
+	nvt,phy_group = <0>;
+};

@@ -1,0 +1,20 @@
+#!/bin/sh
+# source profile_prjcfg on /etc/init.d/rcS (init script cycle) and /etc/profile (after startup cycle)
+source /etc/profile_prjcfg
+
+# fstab devices create
+mount -a
+
+echo "ker" > /proc/nvt_info/bootts
+echo "rcS" > /proc/nvt_info/bootts
+
+# To run /etc/init.d/S* script
+for initscript in /etc/init.d/S[0-9][0-9]*
+do
+	if [ -x $initscript ]; then
+		echo "[Start] $initscript"
+		$initscript
+	fi
+done
+
+echo "rcS" > /proc/nvt_info/bootts

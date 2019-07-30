@@ -1,0 +1,148 @@
+/*
+ * Novatek Ltd. 72668
+ *
+ * Cortex-A9 MPCore
+ *
+ */
+
+/dts-v1/;
+
+/ {
+	model = "nvt-72668";
+	nvt,cortex_a9,site = <0xf>;
+	compatible = "nvt,ca9,72668", "nvt,ca9";
+	interrupt-parent = <&gic>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen { };
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		A9_0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <0>;
+			next-level-cache = <&L2>;
+		};
+
+		A9_1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <1>;
+			next-level-cache = <&L2>;
+		};
+
+		A9_2: cpu@2 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <2>;
+			next-level-cache = <&L2>;
+		};
+
+		A9_3: cpu@3 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <3>;
+			next-level-cache = <&L2>;
+		};
+	};
+
+	pmu {
+		compatible = "arm,cortex-a9-pmu";
+		interrupts = <0 105 4>,
+					 <0 106 4>,
+					 <0 107 4>,
+					 <0 108 4>;
+		interrupt-affinity = <&A9_0>, <&A9_1>, <&A9_2>, <&A9_3>;
+	};
+
+	uart@fd091000 {
+		compatible = "ns16550a";
+		reg = <0xfd091000 0x1000>;
+		interrupts = <0 29 4>;
+		clocks = <&ahb_clk>;
+		baud = <115200>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+	};
+
+	nfc@0xfc048000 {
+		compatible = "nvt,nfc";
+		//    NFC
+		reg = <0xfc048000 0x200>;
+		interrupts = <0 63 4>;
+	};
+
+	mmc@0xfc048300 {
+		compatible = "nvt,hsmmc";
+		//    SDC                 NFC                 FCR
+		reg = <0xfc048300 0x100>, <0xfc048000 0x200>, <0xfc048200 0x100>;
+		interrupts = <0 63 4>;
+		max-bus-frequency = <180000000>;
+	};
+
+	twd@ffd00600 {
+		compatible = "arm,cortex-a9-twd-timer";
+		reg = <0xffd00600 0x20>;
+		interrupts = <1 13 0xf01>;
+		clocks = <&periph_clk>;
+	};
+
+	global_timer@ffd00200 {
+		compatible = "arm,cortex-a9-global-timer";
+		reg = <0xffd00200 0x20>;
+		interrupts = <1 11 0xf01>;
+		clocks = <&periph_clk>;
+	};
+
+	clk_gen {
+		compatible = "nvt,clkgen";
+		reg =	<0xfd020000 0x400>,
+				<0xfd670000 0x1000>,
+				<0xfd720000 0x400>,
+				<0xfd0f0c18 0x4>;
+	};
+
+	rtc {
+		compatible = "novatek,nvt72668-rtc";
+	};
+
+	watchdog {
+		compatible = "novatek,nvt72668-wdt";
+	};
+
+	gic: interrupt-controller@ffd01000 {
+		compatible = "arm,cortex-a9-gic";
+		#interrupt-cells = <3>;
+		#address-cells = <0>;
+		interrupt-controller;
+		reg = <0xffd01000 0x1000>,
+		      <0xffd00100 0x100>;
+	};
+
+	L2: cache-controller@ffe00000 {
+		compatible = "arm,pl310-cache";
+		reg = <0xffe00000 0x1000>;
+		interrupts = <0 96 4>;
+		cache-unified;
+		cache-level = <2>;
+		arm,data-latency = <6 6 6>;
+		arm,tag-latency = <6 6 6>;
+	};
+
+	periph_clk: periph_clk {
+			compatible = "nvt,periph_clk";
+			#clock-cells = <0>;
+			clock-output-names = "periph_clk";
+	};
+
+	ahb_clk: ahb_clk {
+			compatible = "nvt,ahb_clk";
+			#clock-cells = <0>;
+			clock-output-names = "ahb_clk";
+	};
+};

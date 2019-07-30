@@ -1,0 +1,3 @@
+export NVT_PRJCFG_CFG=DemoKit
+export NVT_PRJCFG_MODEL_CFG=${UITRON_DIR}/Project/DemoKit/ModelConfig_CarDV.txt
+export NVT_CROSS=arm-ca53-linux-gnueabihf-4.9-2017.05

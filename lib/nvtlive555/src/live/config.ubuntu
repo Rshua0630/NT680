@@ -1,0 +1,22 @@
+INCLUDE_DIR = nvtrtspd
+LIBRARY_DIR = nvtrtspd
+COMPILE_OPTS =		$(INCLUDES) -I. -O2 -DSOCKLEN_T=socklen_t -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -m32 -D__UBUNTU
+C =			c
+C_COMPILER =		cc
+C_FLAGS =		$(COMPILE_OPTS) $(CPPFLAGS) $(CFLAGS) -fPIC
+CPP =			cpp
+CPLUSPLUS_COMPILER =	c++
+CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall -DBSD=1 $(CPPFLAGS) $(CXXFLAGS)
+OBJ =			o
+LINK =			cc 
+LINK_OPTS = -L../../../release/nvtlive555/lib -m32 -lnvtlive555 -lstdc++ -lpthread -lm -Wl,-rpath=../../../release/nvtlive555/lib
+CONSOLE_LINK_OPTS =	$(LINK_OPTS)
+LIBRARY_LINK =		ar cr 
+LIBRARY_LINK_OPTS =	
+LIB_SUFFIX =			a
+LIBS_FOR_CONSOLE_APPLICATION =
+LIBS_FOR_GUI_APPLICATION =
+#EXE = 
+EXE = .a
+SHARED_LIB = ON
+LD_FLAGS	= -shared -m32

@@ -1,0 +1,11 @@
+make[1]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/u-boot'
+  CLEAN   examples/standalone
+  CLEAN   tools/env
+  CLEAN   tools
+  CLEAN   tools/lib tools/common
+  CLEAN   u-boot.lds include/autoconf.mk include/autoconf.mk.dep
+  CLEAN   u-boot u-boot.bin u-boot.dis u-boot.img u-boot.lz.bin u-boot.map u-boot.srec System.map
+  CLEAN   scripts/basic
+  CLEAN   include/config include/generated
+  CLEAN   include/config.h include/config.mk
+make[1]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/u-boot'

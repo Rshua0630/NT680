@@ -1,0 +1,42 @@
+1. 確認有替換 lds, 讓 gprof 可以正常運作
+/uitron/Project/DemoKit/LDS_IPCAM1.lds
+其內容請替換為
+/uitron/Project/DemoKit/LDS_IPCAM1_gprof.lds
+
+2. 在 PrjCfg_IPCam.h 加入此 #define GPROF_FUNC ENABLE, 以確保 gprof cmd 有被 install
+或是在 uitron 開機 flow 找地方加入這段 code
+#include "gprof.h"
+gprof_InstallCmd();
+
+3. build fw, update fw to your machine
+
+4. 開機後, 參考下列方式, 在 run-time 使用 gprof cmd, 它會把 gmon.out 量測紀錄檔寫到 sd 卡
+
+> gprof start
+gprof open
+Profile from 018038e0..01d4327c in 343962 buckets of size 16
+
+> gprof stop
+gprof pause
+
+> gprof dump
+gprof dump result
+=> [A:\gmon.out] write ok, file size = 687977
+gprof end
+
+
+5. CD目錄到這邊
+/uitron/Project/DemoKit/DemoKit_Data/Release
+
+6. 確認此目錄下有
+/uitron/Project/DemoKit/DemoKit_Data/Release/DemoKit.axf
+
+7. 把 sd 卡的 gmon.out 檔 copy 到此目錄
+/uitron/Project/DemoKit/DemoKit_Data/Release/gmon.out
+
+8. 執行 gprof, 由 gmon.out 量測紀錄檔, 可以產生 gprof.txt 分析檔
+gprof --no-static --no-graph --demangle=auto DemoKit.axf gmon.out > gprof.txt
+
+9. 打開此 gprof.txt 分析檔, 可以觀察由 [gprof start] 到 [gprof stop] 期間的 function 使用量排名
+/uitron/Project/DemoKit/DemoKit_Data/Release/gprof.txt
+

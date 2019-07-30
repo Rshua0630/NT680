@@ -1,0 +1,18 @@
+Novatek clk driver
+-------------------
+
+novatek SoC clk driver
+
+Required properties:
+- compatible : "nvt,clkgen";
+- reg :        register space
+
+Examples:
+        clk_gen {
+                compatible = "nvt,clkgen";
+                reg = <0xfd020000 0x400>,
+                          <0xfd670000 0x1000>,
+                          <0xfd720000 0x400>,
+                          <0xfd0f0c18 0x4>;
+        };
+

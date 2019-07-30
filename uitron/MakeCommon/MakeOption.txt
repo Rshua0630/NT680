@@ -1,0 +1,292 @@
+ifeq "$(OPTION_LOADED)" ""
+
+#----------------------------------------------------------------------
+# Set option file loaded
+#----------------------------------------------------------------------
+export OPTION_LOADED := TRUE
+
+#----------------------------------------------------------------------
+# Set the target CPU architecture
+#
+# ARM   : ARM CPU
+# MIPS  : MIPS CPU (24KEc)
+#----------------------------------------------------------------------
+export ARCH := ARM
+#export ARCH := MIPS
+
+#----------------------------------------------------------------------
+# Set the toolchain
+#
+# ARM   : ARM ADS, RealView
+# GNU   : GNU C, ASM and linker
+#----------------------------------------------------------------------
+#export TOOLCHAIN := ARM
+export TOOLCHAIN := GNU
+
+#----------------------------------------------------------------------
+# Set the floating point
+#
+# SW/HW   : soft or hard float point unit
+#----------------------------------------------------------------------
+#export FPU := hard
+export FPU := soft
+
+#----------------------------------------------------------------------
+# Set the CPU type
+#
+# cortex-a9 or a53
+#----------------------------------------------------------------------
+#export CPU := cortex-a9
+export CPU := cortex-a53
+
+
+#----------------------------------------------------------------------
+# Set branched project code
+#
+# The project code must be 4 characters, please refer to
+# http://mynvt.novatek.com.tw/deptsites/IM/Shared%20Documents/VersionControl.doc
+# for more detailed information.
+# Leaves this variable empty if not branched yet.
+#----------------------------------------------------------------------
+export _BRANCH_PROJECT_ :=
+
+#----------------------------------------------------------------------
+# PClint parameters
+#----------------------------------------------------------------------
+export PCLINT_PARAMETER := -b -v
+
+#----------------------------------------------------------------------
+# Set log file option
+#
+# ON    : Save warning/error message to log files (Win32 Default)
+# OFF   : Just output warning/error message to stdout (Linux Default)
+#----------------------------------------------------------------------
+ifeq "$(shell uname)" "Linux"
+export LOG_ERR := OFF
+else
+export LOG_ERR := ON
+endif
+
+#----------------------------------------------------------------------
+# Set clean log file option
+#
+# ON    : Clean log files before make
+# OFF   : Don't clean log files before make
+#         (You should execute "make clean" to clean the log files)
+#----------------------------------------------------------------------
+export CLEAN_LOG := ON
+#export CLEAN_LOG := OFF
+
+#----------------------------------------------------------------------
+# Keep going when encounter error or not
+#
+# ON    : Make will keep going when encounter error
+# OFF   : Make will stop when encounter error
+#----------------------------------------------------------------------
+#export KEEP_GOING := ON
+export KEEP_GOING := OFF
+
+#----------------------------------------------------------------------
+# Isolate creating dependency files process
+#
+# ON    : You have to run "make dep" to create dependency files
+# OFF   : dependency file will be created when making the file
+#----------------------------------------------------------------------
+export ISOLATE_DEP := ON
+#export ISOLATE_DEP := OFF
+
+#----------------------------------------------------------------------
+# Generate debug symbol in release target
+# Release target won't generate debug symbol by default, if you want to
+# generate debug symbol in release target, please turn on this option
+#
+# ON    : Generate debug symbol in release target
+# OFF   : Don't generate debug symbol in release target (default value)
+#----------------------------------------------------------------------
+#export RELEASE_SYMBOL := ON
+export RELEASE_SYMBOL := OFF
+
+#----------------------------------------------------------------------
+# Generate debug callback of entry and exit to functions
+# Only support on MIPS (This is GCC Extension)
+# Reference: http://blog.linux.org.tw/~jserv/archives/001870.html
+#
+# ON    : Generate debug callback
+# OFF   : Don't generate debug callback (default value)
+#----------------------------------------------------------------------
+#export INSTRUMENT_FUNCTION := ON
+export INSTRUMENT_FUNCTION := OFF
+
+#----------------------------------------------------------------------
+# Generate one ELF section for each function
+# Compiler will generate one ELF section for one .c file by default.
+# If the .c file contains lots of function that are unused, turn on
+# this function can reduce code size.
+# (Linker will remove unused section by default)
+# Valid only in release target
+#
+# ON    : One ELF section for each function
+# OFF   : One ELF section for each .c file (default value of ADS/GNU C compiler)
+#----------------------------------------------------------------------
+export SECTION_BY_FUNC := ON
+#export SECTION_BY_FUNC := OFF
+
+#----------------------------------------------------------------------
+# Copy bin file to storage after bin file is created
+# You have to set an environment variable named "NVT_STG_PATH" (without
+# quote) to work with this function.
+# Example: set "NVT_STG_PATH" to "H:/" (without quote).
+#
+# ON    : Copy bin file to storage after bin file is created
+# OFF   : Don't copy bin file to storage after bin file is created
+#----------------------------------------------------------------------
+export COPY_BIN_2_STG := ON
+#export COPY_BIN_2_STG := OFF
+
+#----------------------------------------------------------------------
+# Select emulation or design-in (Release code) environment
+#
+# ON    : Emulation environment
+# OFF   : Design-in environment
+#----------------------------------------------------------------------
+#export EMULATION := ON
+export EMULATION := OFF
+
+#----------------------------------------------------------------------
+# Select FPGA or Realchip platform for emulation.
+# Valid only when EMULATION is ON
+#
+# ON    : FPGA platform
+# OFF   : Realchip platform
+#----------------------------------------------------------------------
+#export FPGA_EMULATION := ON
+export FPGA_EMULATION := OFF
+
+#----------------------------------------------------------------------
+# Set PLL OSC frequency for FPGA EMULATION
+# Valid only when FPGA_EMULATION is ON
+#
+# For example, you should set it to 27000000 if your FPGA is connected
+# with a 27 MHz OSC.
+#----------------------------------------------------------------------
+export FPGA_PLL_OSC := 24000000
+
+#----------------------------------------------------------------------
+# Set INCLUDE RULE
+#
+# ON    : Enable include rule checking of platform
+# OFF   : Disable include rule checking of platform
+#----------------------------------------------------------------------
+export INCLUDE_RULE := ON
+#export INCLUDE_RULE := OFF
+
+#----------------------------------------------------------------------
+# Use eCos kernel or uITRON kernel
+#
+# ON    : Use eCos kernel and light weight uITRON kernel compatible wrapper
+# OFF   : Use light weight uITRON kernel
+#----------------------------------------------------------------------
+#export USE_ECOS_KERNEL := ON
+export USE_ECOS_KERNEL := OFF
+
+#----------------------------------------------------------------------
+# Use network
+#
+# ON_CPU1    : Use network on CPU1
+# ON_CPU2    : Use network on CPU2
+# OFF        : NOT use network
+#----------------------------------------------------------------------
+#export NETWORK := OFF
+#export NETWORK := ON_CPU1
+#export NETWORK := ON_CPU2
+export NETWORK := ON_CPU2
+
+#----------------------------------------------------------------------
+# PM demo based on customized building way
+#
+# ON    : compile rule depends on _PM_DEMO_ that is informal way.
+# OFF   : formal way to build code
+#----------------------------------------------------------------------
+#export PM_DEMO := ON
+export PM_DEMO := OFF
+
+#----------------------------------------------------------------------
+# Use ARM GIC as interrupt controller
+#
+# ON    : Use GIC
+# OFF   : Use Lagacy interrupt as interrupt controller
+#----------------------------------------------------------------------
+export ARM_GIC_400 := ON
+#export ARM_GIC_400 := OFF
+
+#----------------------------------------------------------------------
+# S3 power down mode ON/OFF
+#
+# ON    : S3 power mode flow ON
+# OFF   : S3 power mode flow OFF
+#----------------------------------------------------------------------
+#export S3_POWER_DOWN_MODE := ON
+export S3_POWER_DOWN_MODE := OFF
+
+#----------------------------------------------------------------------
+# Set the parameters of GNU toolchain
+#----------------------------------------------------------------------
+ifeq "$(TOOLCHAIN)" "GNU"
+ifeq "$(shell uname)" "Linux"
+ifeq (,$(wildcard /opt/ivot/gcc-linaro-arm-none-eabi-4.9-2014.09_linux))
+	CROSS_COMPILE      := /opt/arm/gcc-linaro-arm-none-eabi-4.9-2014.09_linux/bin/arm-none-eabi-
+else
+    CROSS_COMPILE      := /opt/ivot/gcc-linaro-arm-none-eabi-4.9-2014.09_linux/bin/arm-none-eabi-
+endif
+    TOOLS_DIR          = ../../tools
+	TOOLS_SUFFIX       =
+else
+    CROSS_COMPILE	    := arm-eabi-
+    TOOLS_DIR          = ../../tools
+	TOOLS_SUFFIX       = .exe
+endif
+    export CC           = $(CROSS_COMPILE)gcc
+    export AS           = $(CROSS_COMPILE)as
+    export LD           = $(CROSS_COMPILE)ld
+    export AR           = $(CROSS_COMPILE)ar
+    export OBJDUMP      = $(CROSS_COMPILE)objdump
+    export FE           = $(CROSS_COMPILE)objcopy
+    export NM           = $(CROSS_COMPILE)nm
+    export LT           = "C:/lint/lint-nt.exe"
+    export GCC          = $(CROSS_COMPILE)gcc
+    export CXX          = $(CROSS_COMPILE)g++
+    export EBIN         = $(TOOLS_DIR)/encrypt_bin$(TOOLS_SUFFIX)
+    export BFC          = $(TOOLS_DIR)/bfc$(TOOLS_SUFFIX)
+    export LDNVT        = $(TOOLS_DIR)/nvt-ld-op$(TOOLS_SUFFIX)
+endif
+
+
+#----------------------------------------------------------------------
+# Set make flags
+#
+# Note: Don't modify this if you didn't add new option
+#----------------------------------------------------------------------
+# Slient mode
+MAKEFLAGS := s
+
+# Keep going or not
+ifeq "$(KEEP_GOING)" "ON"
+    MAKEFLAGS := $(MAKEFLAGS)k
+endif
+
+#----------------------------------------------------------------------
+# OS Type and Number of CPUs
+#----------------------------------------------------------------------
+NPROCS=1
+export OS:=$(shell uname -s)
+
+ifeq ($(OS),Linux)
+  NPROCS:=$(shell grep -c ^processor /proc/cpuinfo)
+endif
+ifeq ($(findstring CYGWIN_NT,$(OS)),CYGWIN_NT)
+  NPROCS:=$(NUMBER_OF_PROCESSORS)
+endif
+
+export JOB_FLAGS:= -j$(NPROCS)
+
+endif

@@ -1,0 +1,23 @@
+/*
+ * Novatek Ltd. NA51000 BSP part of dts
+ *
+ * Cortex-A53 MPCore
+ *
+ */
+
+/dts-v1/;
+#include <dt-bindings/gpio/nvt-gpio.h>
+#include "nvt-na51000-evb-default.dtsi"
+
+/ {
+	mmc@f0420000 {
+		compatible = "nvt,nvt_mmc";
+		reg = <0xf0420000 0x1000>;
+		interrupts = <GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>;
+		max-frequency = <48000000>;
+		voltage-switch = <0>;
+		max-voltage = <3300>;
+		cd_gpio = <D_GPIO(0) GPIO_RISING_EDGE GPIO_POLLING>;
+		/*ro_gpio = <D_GPIO(1) GPIO_RISING_EDGE GPIO_POLLING>;*/
+	};
+};

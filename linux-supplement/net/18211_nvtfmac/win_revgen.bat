@@ -1,0 +1,1 @@
+subwcrev ./ ./include/nvt_ver.h ./include/nvt_ver.h -f

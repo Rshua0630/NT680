@@ -1,0 +1,6 @@
+# Rule	NAME	FROM	TO	TYPE	IN	ON	AT	SAVE	LETTER/S
+Rule	NVT	1970	only	-       Mar	lastSun	1:00u	1:00	D
+Rule	NVT	1970	only	-	Oct	lastSun	1:00u	0	S
+
+# Zone	NAME		GMTOFF	RULES	FORMAT	[UNTIL]
+Zone	CST		8:00	NVT	C%sT

@@ -1,0 +1,448 @@
+/*
+ * Novatek Ltd. 72172 BSP part of dts
+ *
+ * Cortex-A53 MPCore
+ *
+ */
+
+/ {
+	model = "Novatek NT72172";
+	compatible = "novatek,nt72172", "nvt,ca53";
+	interrupt-parent = <&gic>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			reg = <0x0>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0xfd0201c0>;
+			next-level-cache = <&L2>;
+			clock-frequency = <1000000000>;
+		};
+
+		cpu1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			reg = <0x1>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0xfd0201c8>;
+			next-level-cache = <&L2>;
+			clock-frequency = <1000000000>;
+		};
+
+		cpu2: cpu@2 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			reg = <0x2>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0xfd0201d0>;
+			next-level-cache = <&L2>;
+			clock-frequency = <1000000000>;
+		};
+
+		cpu3: cpu@3 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			reg = <0x3>;
+			enable-method = "spin-table";
+			cpu-release-addr = <0xfd0201d8>;
+			next-level-cache = <&L2>;
+			clock-frequency = <1000000000>;
+		};
+
+		L2: l2-cache0 {
+			compatible = "cache";
+		};
+
+	};
+
+	nvt-cpufreq {
+		compatible = "nvt,nvt72xxx-cpufreq";
+		operating-points = <
+			/* KHz    uV , voltage is fake*/
+			1100000 1000000
+			1000000 1000000
+			800000  1000000
+			500000  1000000
+			100000  1000000
+		>;
+	};
+
+	timer {
+		compatible = "arm,armv7-timer";
+		interrupts =	<1 13 0xff01>,	/* Secure Phys IRQ */
+				<1 14 0xff01>,	/* Non-secure Phys IRQ */
+				<1 11 0xff01>,	/* Virt IRQ */
+				<1 10 0xff01>;	/* Hyp IRQ */
+		clock-frequency = <0xb71b00>;
+		always-on;
+	};
+
+	pmu {
+		compatible = "arm,cortex-a7-pmu";
+		interrupts = <0 105 4>,
+				<0 106 4>,
+				<0 107 4>,
+				<0 108 4>;
+		interrupt-affinity = <&cpu0>, <&cpu1>, <&cpu2>, <&cpu3>;
+	};
+
+	etr@0xfd201000 {
+		compatible = "coresight-tmc", "arm,primecell";
+		reg = <0xfd201000 0x1000>;
+		arm,buffer-size = <0x80000>;
+		coresight-default-sink;
+		clocks = <&ahb_clk>;
+		clock-names = "apb_pclk";
+		port {
+			etr_in_port: endpoint {
+				slave-mode;
+				remote-endpoint = <&etf_out_port>;
+			};
+		};
+	};
+
+	etf@0xfd206000 {
+		compatible = "coresight-tmc", "arm,primecell";
+		reg = <0xfd206000 0x1000>;
+		clocks = <&ahb_clk>;
+		clock-names = "apb_pclk";
+		port@0 {
+			etf_in_port: endpoint {
+				slave-mode;
+				remote-endpoint = <&funnel0_out_port0>;
+			};
+		};
+		port@1 {
+			etf_out_port: endpoint {
+				remote-endpoint = <&etr_in_port>;
+			};
+		};
+	};
+
+	funnel@0xfd204000 {
+		compatible = "arm,coresight-funnel", "arm,primecell";
+		reg = <0xfd204000 0x1000>;
+
+		clocks = <&ahb_clk>;
+		clock-names = "apb_pclk";
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+				/* funnel out */
+			port@0 {
+				reg = <0>;
+				funnel0_out_port0: endpoint {
+					remote-endpoint = <&etf_in_port>;
+				};
+			};
+
+			/* funnel input */
+			port@1 {
+				reg = <0>;
+				funnel0_in_port0: endpoint {
+					slave-mode;
+					remote-endpoint = <&etm0_out_port>;
+				};
+			};
+			port@2 {
+				reg = <1>;
+				funnel0_in_port1: endpoint {
+					slave-mode;
+					remote-endpoint = <&etm1_out_port>;
+				};
+			};
+			port@3 {
+				reg = <2>;
+				funnel0_in_port2: endpoint {
+					slave-mode;
+					remote-endpoint = <&etm2_out_port>;
+				};
+			};
+			port@4 {
+				reg = <3>;
+				funnel0_in_port3: endpoint {
+					slave-mode;
+					remote-endpoint = <&etm3_out_port>;
+				};
+			};
+		};
+	};
+
+	etm@0xfd23c000 {
+		compatible = "arm,coresight-etm4x", "arm,primecell";
+		reg = <0xfd23c000 0x1000>;
+		clocks = <&ahb_clk>;
+		clock-names = "apb_pclk";
+		cpu = <&cpu0>;
+		port {
+			etm0_out_port: endpoint {
+				remote-endpoint = <&funnel0_in_port0>;
+			};
+		};
+	};
+
+	etm@0xfd23d000 {
+		compatible = "arm,coresight-etm4x", "arm,primecell";
+		reg = <0xfd23d000 0x1000>;
+		clocks = <&ahb_clk>;
+		clock-names = "apb_pclk";
+		cpu = <&cpu1>;
+		port {
+			etm1_out_port: endpoint {
+				remote-endpoint = <&funnel0_in_port1>;
+			};
+		};
+	};
+
+	etm@0xfd23e000 {
+		compatible = "arm,coresight-etm4x", "arm,primecell";
+		reg = <0xfd23e000 0x1000>;
+		clocks = <&ahb_clk>;
+		clock-names = "apb_pclk";
+		cpu = <&cpu2>;
+		port {
+			etm2_out_port: endpoint {
+				remote-endpoint = <&funnel0_in_port2>;
+			};
+		};
+	};
+
+	etm@0xfd23f000 {
+		compatible = "arm,coresight-etm4x", "arm,primecell";
+		reg = <0xfd23f000 0x1000>;
+		clocks = <&ahb_clk>;
+		clock-names = "apb_pclk";
+		cpu = <&cpu3>;
+		port {
+			etm3_out_port: endpoint {
+				remote-endpoint = <&funnel0_in_port3>;
+			};
+		};
+	};
+
+	uart@fd091000 {
+		compatible = "ns16550a";
+		reg = <0xfd091000 0x1000>;
+		interrupts = <0 29 4>;
+		interrupt-parent = <&gic>;
+		clocks = <&ahb_clk>;
+		baud = <115200>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+	};
+
+	uart@fd090000 {
+		compatible = "ns16550a";
+		reg = <0xfd090000 0x1000>;
+		interrupts = <0 51 4>;
+		clocks = <&ahb_clk>;
+		baud = <115200>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+	};
+
+	uart@fd092000 {
+		compatible = "ns16550a";
+		reg = <0xfd092000 0x1000>;
+		interrupts = <0 45 4>;
+		clocks = <&ahb_clk>;
+		baud = <115200>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+	};
+
+	nfc@0xfc048000 {
+		compatible = "nvt,nfc";
+		//    NFC
+		reg = <0xfc048000 0x200>;
+		interrupts = <0 63 4>;
+	};
+
+	spi@fd081000 {
+		compatible = "nvt,NT72668-spi";
+		reg = <0xfd081000 0x48>;
+		interrupts = <0 69 4>;
+		clocks = <&periph_clk>;
+	};
+
+	mmc@0xfc048300 {
+		compatible = "nvt,hsmmc";
+		//    SDC                 NFC                 FCR
+		reg = <0xfc048300 0x100>,
+			<0xfc048000 0x200>,
+			<0xfc048200 0x100>;
+		interrupts = <0 63 4>;
+		max-bus-frequency = <180000000>;
+		adll-read-phase = <0x5>;
+		adll-write-phase = <0x1c>;
+		full-pwr-cycle;
+	};
+
+	unzip@0xfd6f0000 {
+		compatible = "nvt,unzip";
+		interrupts = <0 97 4>;
+		reg = <0xfd6f0000 0x40>;
+		//enable_fifo_mode;
+
+	};
+
+	atf@0xfd060100 {
+		compatible = "nvt,atf";
+		interrupts = <0 140 4>;
+		reg = <0xfd060100 0xc0>;
+	};
+
+	clk_gen {
+		compatible = "nvt,clkgen";
+		reg = <0xfd020000 0x400>,
+			  <0xfd670000 0x1000>,
+			  <0xfd720000 0x400>,
+			  <0xfd0f0c18 0x4>;
+	};
+
+	ethernet@fd160000 {
+		compatible = "nvt,synopsys-mac";
+		//MAC & DMA & GPIO mux & Clock pad-in mux & Clock control
+		reg = <0xfd160000 0x0ffc>,
+		      <0xfd161000 0x0054>,
+		      <0xfd100400 0x4>,
+		      <0xfc040bf0 0x4>,
+		      <0xfc040bf4 0x4>;
+		interrupts = <0 42 4>;
+	};
+
+	gic: interrupt-controller@ffd00000 {
+		compatible = "arm,cortex-a7-gic";
+		#interrupt-cells = <3>;
+		interrupt-controller;
+		reg =	<0xffd01000 0x1000>,	/* GIC Dist */
+			<0xffd02000 0x1000>,	/* GIC CPU */
+			<0xffd04000 0x2000>,	/* GIC VCPU Control */
+			<0xffd06000 0x2000>;	/* GIC VCPU */
+		interrupts = <1 9 0xf04>;	/* GIC Maintenence IRQ */
+	};
+
+	periph_clk: periph_clk {
+			compatible = "nvt,periph_clk";
+			#clock-cells = <0>;
+			clock-output-names = "periph_clk";
+	};
+
+	ahb_clk: ahb_clk {
+			compatible = "nvt,ahb_clk";
+			#clock-cells = <0>;
+			clock-output-names = "ahb_clk";
+	};
+
+	u2phy_1: nvt_usb2_phy@fd170000 {
+		compatible = "nvt,NT72668-usb2phy";
+		//    APB                 PONRST APB		PHY
+		reg = <0xfd170000 0x500>, <0xfd170000 0x500>,
+				<0xfd170400 0x500>;
+		//offset mask value
+		nvt,phy_setting = <0x18 0xe 0x0>,  //TX parameter
+				<0x18 0xc 0xc>,  //TX parameter
+				<0xdc 0x20 0x0>, //timing parameter
+				<0x14 0x3 0x3>;  //dis parameter
+		nvt,phy_group = <0>;
+	};
+
+	u2phy_2: nvt_usb2_phy@fd178000 {
+		compatible = "nvt,NT72668-usb2phy";
+		//    APB                 PONRST APB		PHY
+		reg = <0xfd178000 0x500>, <0xfd170000 0x500>,
+			<0xfd178400 0x500>;
+		//offset mask value
+		nvt,phy_setting = <0x18 0xe 0x0>,  //TX parameter
+				<0x18 0xc 0xc>,  //TX parameter
+				<0xdc 0x20 0x0>, //timing parameter
+				<0x14 0x3 0x3>;  //dis parameter
+		nvt,phy_group = <0>;
+	};
+
+	u2phy_3: nvt_usb2_phy@fd180000 {
+		compatible = "nvt,NT72668-usb2phy";
+		//    APB                 PONRST APB		PHY
+		reg = <0xfd180000 0x500>, <0xfd180000 0x500>,
+			<0xfd180400 0x500>;
+		//offset mask value
+		nvt,phy_setting = <0xdc 0x20 0x0>, //timing parameter
+				<0x14 0x3 0x3>;  //dis parameter
+		nvt,phy_group = <1>;
+	};
+
+	u2phy_4: nvt_usb2_phy@fd184000 {
+		compatible = "nvt,NT72668-usb2phy";
+		//    APB                 PONRST APB		PHY
+		reg = <0xfd184000 0x500>, <0xfd180000 0x500>,
+			<0xfd184400 0x500>;
+		//offset mask value
+		nvt,phy_setting = <0x18 0xe 0x0>,  //TX parameter
+				<0xdc 0x20 0x0>, //timing paramete
+				<0x14 0x3 0x3>;  //dis parameter
+		nvt,phy_group = <1>;
+	};
+
+	ehci@fc1f0000 {
+		compatible = "nvt,NT72668-ehci";
+		//    AHB
+		reg = <0xfc1f0000 0x200>;
+		interrupts = <0 76 4>;
+		id = <0>;
+		usb2phy = <&u2phy_1>;
+	};
+
+	ehci@fc000000 {
+		compatible = "nvt,NT72668-ehci";
+		//    AHB
+		reg = <0xfc000000 0x200>;
+		interrupts = <0 54 4>;
+		id = <1>;
+		usb2phy = <&u2phy_2>;
+	};
+
+	ehci@fc140000 {
+		compatible = "nvt,NT72668-ehci";
+		//    AHB
+		reg = <0xfc140000 0x200>;
+		interrupts = <0 55 4>;
+		id = <2>;
+		usb2phy = <&u2phy_3>;
+	};
+
+	ehci@fc1a0000 {
+		compatible = "nvt,NT72668-ehci";
+		//    AHB
+		reg = <0xfc1a0000 0x200>;
+		interrupts = <0 56 4>;
+		id = <3>;
+		usb2phy = <&u2phy_4>;
+	};
+
+	nvt_stbc: nvt_stbc_phy@fc040000 {
+		compatible = "novatek,nvt-stbc";
+		reg = <0xfc040000 0x288>;
+		download_reg_ofs = <0x0>;
+		upload_reg_ofs = <0x4>;
+		int_stat_reg_ofs = <0x8>;
+		stbc_patt_reg_ofs = <0x204>;
+		stbc_key_pass_reg_ofs = <0x208>;
+		rtc_base_reg_ofs = <0x100>;
+		rtc_sec_reg_ofs = <0x104>;
+		rtc_day_reg_ofs = <0x108>;
+		rtc_ctrl_reg_ofs = <0x114>;
+		rtc_switch_reg_ofs = <0x200>;
+		bootstrap_reg_ofs = <0x210>;
+	};
+};

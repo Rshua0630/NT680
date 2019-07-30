@@ -1,0 +1,203 @@
+/*
+ * Novatek Ltd. NA51000 BSP part of dts
+ *
+ * Cortex-A53 MPCore
+ *
+ */
+
+#include <dt-bindings/gpio/nvt-gpio.h>
+#include "nvt-na51000-basic.dtsi"
+
+/ {
+	chosen {
+		bootargs = " ";
+	};
+
+	aliases {
+		mmc0 = "/mmc@f0420000";	/* Fixed to mmcblk0 for sdio1 */
+		mmc1 = "/mmc@f0500000";	/* Fixed to mmcblk1 for sdio2 */
+		mmc2 = "/mmc@f0510000";	/* Fixed to mmcblk2 for sdio3 */
+	};
+
+	uart@f0300000 {
+		compatible = "ns16550a";
+		reg = <0xf0300000 0x1000>;
+		interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
+		baud = <115200>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <48000000>;
+		hw_flowctrl = <0>;
+	};
+
+	uart@f0310000 {
+		compatible = "ns16550a";
+		reg = <0xf0310000 0x1000>;
+		interrupts = <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
+		baud = <115200>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <48000000>;
+		hw_flowctrl = <0>;
+	};
+
+	uart@f0380000 {
+		compatible = "ns16550a";
+		reg = <0xf0380000 0x1000>;
+		interrupts = <GIC_SPI 46 IRQ_TYPE_LEVEL_HIGH>;
+		baud = <115200>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <48000000>;
+		hw_flowctrl = <0>;
+	};
+
+	cc@f0090000 {
+		compatible = "na51000-nvt-ipc";
+		reg = <0xf0090000 0x300>;
+		mmio_base  = <0xf0000000>;
+		interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	mmc@f0420000 {
+		compatible = "nvt,nvt_mmc";
+		reg = <0xf0420000 0x1000>;
+		interrupts = <GIC_SPI 30 IRQ_TYPE_LEVEL_HIGH>;
+		max-frequency = <48000000>;
+		voltage-switch = <0>;
+		max-voltage = <3300>;
+		bus-width = <4>;
+		cd_gpio = <D_GPIO(0) GPIO_FALLING_EDGE GPIO_POLLING>;
+		/*card_power_gpio = <P_GPIO(0) GPIO_LOW>;*/
+		/*ro_gpio = <D_GPIO(1) GPIO_RISING_EDGE GPIO_POLLING>;*/
+		/*power_en = <D_GPIO(2) GPIO_RISING_EDGE>;*/
+		/*mmc-pwrseq = <&mmc0_pwrweq>;*/
+	};
+
+	mmc0_pwrweq: mmc0_pwrweq {
+		compatible = "mmc-pwrseq-simple";
+		reset-gpios = <&gpio P_GPIO(0) GPIO_ACTIVE_HIGH>;
+	};
+
+	mmc@f0500000 {
+		compatible = "nvt,nvt_mmc2";
+		reg = <0xf0500000 0x1000>;
+		interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+		max-frequency = <192000000>;
+		voltage-switch = <1>;
+		max-voltage = <3300>;
+		bus-width = <4>;
+		cd_gpio = <0 GPIO_FALLING_EDGE GPIO_INTERRUPT>;
+		/*ro_gpio = <D_GPIO(3) GPIO_RISING_EDGE GPIO_POLLING>;*/
+		/*power_en = <D_GPIO(4) GPIO_RISING_EDGE>;*/
+		/*mmc-pwrseq = <&mmc1_pwrweq>;*/
+	};
+
+	mmc1_pwrweq: mmc1_pwrweq {
+		compatible = "mmc-pwrseq-simple";
+		reset-gpios = <&gpio D_GPIO(4) GPIO_ACTIVE_HIGH>;
+	};
+
+	nand@f0400000 {
+		compatible = "nvt,nvt_spinand";
+		reg = <0xf0400000 0x1000>;
+		interrupts = <GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
+		clock-frequency = <80000000>;
+		nvt-devname = "spi_nand.0";
+	};
+
+	nor@f0400000 {
+		compatible = "nvt,nvt_spinor";
+		reg = <0xf0400000 0x1000>;
+		interrupts = <GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
+		clock-frequency = <48000000>;
+		nvt-devname = "spi_nor.0";
+	};
+
+        gpio: gpio@f0070000 {
+		compatible = "nvt,nvt_gpio";
+		reg = <0xf0070000 0x10000>;
+		interrupts = <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
+		#gpio-cells = <2>;
+        };
+
+	eth@f02b0000 {
+		compatible = "nvt,synopsys_eth";
+		reg = <0xf02b0000 0x10000>;
+		interrupts = <GIC_SPI 34 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	wdt@f0050000 {
+		compatible = "nvt,nvt_wdt";
+		reg = <0xf0050000 0x10000>;
+	};
+
+	pwm@f0210000 {
+		compatible = "nvt,nvt_pwm";
+		reg = <0xf0210000 0x2000>;
+		interrupts = <GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	adc@f0260000 {
+		compatible = "nvt,nvt_adc";
+		reg = <0xf0260000 0x1000>;
+		interrupts = <GIC_SPI 47 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	i2c@f0220000 {
+		compatible = "nvt,nvt_i2c";
+		reg = <0xf0220000 0x100>;
+		interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+		clock-frequency = <100000>;
+	};
+
+	rtc@f0060000 {
+		compatible = "nvt,nvt_rtc";
+		reg = <0xf0060000 0x100>;
+		interrupts = <GIC_SPI 56 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	drtc@f0110000 {
+		compatible = "nvt,nvt_drtc";
+		reg = <0xf0110000 0x100>;
+		interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	nvt_usb3dev@f1700000 {
+		compatible = "nvt,nvt_dwc3_dev";
+		reg = <0xf1700000 0x10000>;
+		interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
+        };
+
+	nvt_usb3host@f1700000 {
+		compatible = "nvt,nvt_usb3xhci";
+		reg = <0xf1700000 0x10000>;
+		interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
+        };
+
+	nvt_usb2host@f0600000 {
+		compatible = "nvt,ehci-nvtivot";
+		reg = <0xf0600000 0x10000>;
+		interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+        };
+	nvt_usb2dev@f0600000 {
+		compatible = "nvt,fotg200_udc";
+		reg = <0xf0600000 0x10000>;
+		interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
+        };
+	spi@f0320000 {
+		compatible = "nvt,nvt_spi";
+		reg = <0xf0320000 0x10000>;
+		interrupts = <GIC_SPI 36 IRQ_TYPE_LEVEL_HIGH>;
+		nvt-devname = <0>;
+        };
+
+	crypto@f0620000 {
+		compatible = "nvt,nvt_crypto";
+		reg = <0xf0620000 0x100>;
+		interrupts = <GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>;
+	};
+};

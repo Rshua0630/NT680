@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# System Driver Init
+#modprobe ehci-hcd
+#modprobe xhci_plat_hcd
+modprobe nvt_status
+modprobe nvt_pstore
+modprobe cryptodev

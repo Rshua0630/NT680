@@ -1,0 +1,13 @@
+#
+# Synopsys network device configuration
+#
+
+config SYNOPSYS_DWC_ETH_QOS
+        tristate "Sypnopsys DWC Ethernet QOS v4.21a support"
+        select PHYLIB
+        select CRC32
+        select MII
+	select INET_LRO
+        depends on HAS_DMA
+        ---help---
+          This driver supports the DWC Ethernet QoS from Synopsys

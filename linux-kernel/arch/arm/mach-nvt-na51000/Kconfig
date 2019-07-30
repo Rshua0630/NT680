@@ -1,0 +1,62 @@
+config MACH_NVT_NA51000
+	bool "Novatek NA51000 series SOC support" if ARCH_NVT_IVOT_V7
+	select GENERIC_ALLOCATOR
+	select ARCH_REQUIRE_GPIOLIB
+	select CLKDEV_LOOKUP
+	select COMMON_CLK
+	select GENERIC_IRQ_CHIP
+	select MULTI_IRQ_HANDLER
+	select HAVE_SMP
+	select NVT_IPC
+	help
+	  Support for Novatek's video processing platform.
+
+choice
+	prompt "Board type"
+	default NT96680_FPGA_EMULATION_S1
+
+config NVT_NT9668X_EVB
+	bool "NT9668X EVB board"
+	depends on MACH_NVT_NA51000
+	help
+	  Enable this option to do NT9668X EVB.
+endchoice
+
+config NVT_IM_UART
+	bool "NVT IM 8250 compatible UART"
+	depends on MACH_NVT_NA51000
+	default y
+	help
+	  This option will configure the NVT IM UART HW setting.
+
+config NVT_INFO
+	bool "NVT IVOT info for time measurement/memory hotplug/modelext...etc functions."
+	depends on MACH_NVT_NA51000
+	default y
+	help
+	  Support NVT multi-functions such as boot time measurement/memory hotplug/modelext...etc.
+	  We provide a tool can be used to measure booting time. ($ cat /proc/nvt_info/bootts)
+
+config NVT_WIFI_BRCM_WOW
+	bool "To support Broadcom AP6212a driver WOW mode."
+	depends on MACH_NVT_NA51000
+	default n
+	help
+	  Enable this option can let ap6212a wifi module support WOW mode.
+	  The WOW mode is to keep alive after system goes to sleep/suspend.
+	  Please also enable Wifi function in ModelConfig_XXX.txt
+
+config NVT_WIFI_BRCM_PM
+	bool "To support Broadcom AP6212a driver PM mode."
+	depends on MACH_NVT_NA51000
+	default n
+	help
+	  Enable this option can let ap6212a wifi module support Suspend to RAM(STR) mode.
+	  Please also enable Wifi function in ModelConfig_XXX.txt
+
+config NVT_VOS
+	bool "NVT_VOS"
+	depends on MACH_NVT_NA51000 && SMP
+	default n
+	help
+	  This option will configure the nvt_vos the runs uItron on Linux.	  

@@ -1,0 +1,25 @@
+choice
+	prompt "Novatek board selection"
+	depends on ARCH_NVT_V7
+	default ARCH_NVT72658
+
+config ARCH_NVT72668
+	bool "Novatek NVT72668 SoC (Cotex A9x4)"
+	help
+	  This option enables support for systems using Cortex processor based
+	  Novatek Cortex A9X4 72668 motherboard,
+	  for example:
+
+	  - Cortex-A9x4
+
+	  You must boot using a Flattened Device Tree in order to use these
+	  platforms. The traditional (ATAGs) boot method is not usable on
+	  these boards with this option.
+
+config ARCH_NVT72658
+	bool "Novatek NVT72658 SoC (Cotex A9x2)"
+	help
+	  This option enables support for systems using Cortex processor based
+	  Novatek Cortex A9x2 72658 motherboard,
+
+endchoice

@@ -1,0 +1,58 @@
+make[1]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/arm_neon_perf'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/arm_neon_perf'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/fslinux'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/fslinux'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/hfs'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/hfs'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/lviewd'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/lviewd'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/mem'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/mem'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/msdcnvt'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/msdcnvt'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/nvthoughipc'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/nvthoughipc'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/nvtipcd'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/nvtipcd'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/nvtrtspd'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/nvtrtspd'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/ucmd'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/ucmd'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/uctrl'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/uctrl'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/ugxstrg'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/ugxstrg'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/usbipc'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/usbipc'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/usocket'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/usocket'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/wifi_fw'
+>>>>>>>>>> processing folder ap6255 clean
+make[3]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/wifi_fw/ap6255'
+rm -rf /home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/root-fs/rootfs/lib/firmware/ap6255
+make[3]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/wifi_fw/ap6255'
+Done!
+ 
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/wifi_fw'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/wifiipc'
+>>> Skip
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/wifiipc'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/external'
+>>>>>>>>>>>>>>>>>>> Remove >>>>>>>>>>>>>>>>>>>
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application/external'
+make[1]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/application'

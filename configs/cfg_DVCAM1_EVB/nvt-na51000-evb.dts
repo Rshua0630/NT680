@@ -1,0 +1,13 @@
+/*
+ * Novatek Ltd. NA51000 BSP part of dts
+ *
+ * Cortex-A53 MPCore
+ *
+ */
+
+/dts-v1/;
+#include <dt-bindings/gpio/nvt-gpio.h>
+#include "nvt-na51000-evb-default.dtsi"
+
+/ {
+};

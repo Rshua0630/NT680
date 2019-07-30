@@ -1,0 +1,5 @@
+INCLUDES = -Iinclude -I../groupsock/include
+#PREFIX = /usr/local
+PREFIX = ../../../release/nvtlive555
+LIBDIR = $(PREFIX)/lib
+##### Change the following for your environment:

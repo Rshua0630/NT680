@@ -1,0 +1,13 @@
+Novatek rtc driver
+-------------------
+
+novatek SoC rtc driver
+
+Required properties:
+- compatible : "novatek,nvtsoc-rtc";
+
+Examples:
+        nvtsoc-rtc {
+                compatible = "novatek,nvtsoc-rtc";
+        };
+

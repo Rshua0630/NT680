@@ -1,0 +1,15 @@
+Novatek atf driver
+-------------------
+
+novatek SoC atf driver
+
+Required properties:
+- compatible : "nvt,art";
+- reg :        register space
+
+Examples:
+        atf@0xfd060100 {
+                compatible = "nvt,atf";
+                interrupts = <0 140 4>;
+                reg = <0xfd060100 0xc0>;
+        };

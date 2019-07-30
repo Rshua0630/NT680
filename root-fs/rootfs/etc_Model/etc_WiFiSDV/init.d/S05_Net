@@ -1,0 +1,32 @@
+#!/bin/sh
+
+NETWORK_SETUP_SCRIPT="/etc/init.d/net_init.sh"
+
+echo "net" > /proc/nvt_info/bootts
+
+if [ "$NVT_ETHERNET" == "NVT_ETHERNET_NONE" ] && [ "$NVT_SDIO_WIFI" == "NVT_SDIO_WIFI_NONE" ]; then
+	echo "Without network"
+else
+	if [ "$NVT_ETHERNET" != "NVT_ETHERNET_NONE" ]; then
+		modprobe ntkimethmac
+		ifconfig eth0 up
+		# nvtsystem will generate this network setup script
+		if [ -f "$NETWORK_SETUP_SCRIPT" ]; then
+			$NETWORK_SETUP_SCRIPT
+		else
+			echo "Configuring loopback interface"
+			ifconfig lo 127.0.0.1
+			if [ "$NVT_DEFAULT_NETWORK_BOOT_PROTOCOL" == "NVT_DEFAULT_NETWORK_BOOT_PROTOCOL_DHCP_SERVER" ]; then
+				ifconfig eth0 192.168.0.3
+				udhcpd -fS /etc/udhcpd.conf &
+			elif [ "$NVT_DEFAULT_NETWORK_BOOT_PROTOCOL" == "NVT_DEFAULT_NETWORK_BOOT_PROTOCOL_DHCP_CLIENT" ]; then
+				udhcpc -i %s -p /var/run/udhcpc_%s.pid -T 10 -t 1 -x hostname:$(hostname) &
+			else
+				ifconfig eth0 192.168.0.3
+			fi
+		fi
+	fi
+fi
+
+echo "net" > /proc/nvt_info/bootts
+uctrl usys -notify net_init_ok

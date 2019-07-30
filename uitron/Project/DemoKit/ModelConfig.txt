@@ -1,0 +1,40 @@
+#----------------------------------------------------------------------
+# Set model here
+#
+# The corresponding peripheral device (e.g. Sensor) is referred to
+# ModelConfig_(MODEL).txt
+#
+# [OWNER LIST]
+# FPGA: Lincy
+# IPCAM1_EVB: Charlie
+# IPCAM_256M_EVB: Charlie
+# DVCAM1_EVB: Lincy
+# DVCAM2_EVB: Lincy
+# S5PV2: Ben
+# WiFiSDV: KS
+# ARTOSYN_DVCAM_EVB: Charlie
+# FIREFLY: KS
+# USB_DISK_EVB: Charlie
+# ARTOSYN_IPCAM_EVB: Charlie
+# MIO_HT43: Hideo
+# B5: Philex
+# XF4000: Philex
+# CarDV: KS
+# PURE_LINUX: Lincy
+#----------------------------------------------------------------------
+
+# FPGA
+# IPCAM1_EVB
+# IPCAM_256M_EVB
+# DVCAM1_EVB
+# DVCAM2_EVB
+# S5PV2
+# WiFiSDV
+# ARTOSYN_DVCAM_EVB
+# FIREFLY
+# USB_DISK_EVB
+# ARTOSYN_IPCAM_EVB
+# MIO_HT43
+# CarDV
+# PURE_LINUX
+MODEL = CarDV

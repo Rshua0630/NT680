@@ -1,0 +1,229 @@
+/*
+ * Novatek Ltd. 72658
+ *
+ * Cortex-A9 MPCore
+ *
+ */
+
+/dts-v1/;
+
+/ {
+	model = "nvt-72658";
+	nvt,cortex_a9,site = <0xf>;
+	compatible = "nvt,ca9,72658", "nvt,ca9";
+	interrupt-parent = <&gic>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen { };
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		A9_0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <0>;
+			next-level-cache = <&L2>;
+		};
+
+		A9_1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <1>;
+			next-level-cache = <&L2>;
+		};
+	};
+
+	pmu {
+		compatible = "arm,cortex-a9-pmu";
+		interrupts = <0 105 4>,
+					 <0 106 4>;
+		interrupt-affinity = <&A9_0>, <&A9_1>;
+	};
+
+	uart@fd091000 {
+		compatible = "ns16550a";
+		reg = <0xfd091000 0x1000>;
+		interrupts = <0 29 4>;
+		clocks = <&ahb_clk>;
+		baud = <115200>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+	};
+
+	nfc@0xfc048000 {
+		compatible = "nvt,nfc";
+		//    NFC
+		reg = <0xfc048000 0x200>;
+		interrupts = <0 63 4>;
+	};
+
+	mmc@0xfc048300 {
+		compatible = "nvt,hsmmc";
+		//    SDC                 NFC                 FCR
+		reg = <0xfc048300 0x100>,
+			<0xfc048000 0x200>,
+			<0xfc048200 0x100>;
+		interrupts = <0 63 4>;
+		max-bus-frequency = <180000000>;
+	};
+
+	unzip@0xfd6f0000 {
+		compatible = "nvt,unzip";
+		interrupts = <0 97 4>;
+		reg = <0xfd6f0000 0x40>;
+	};
+
+	twd@ffd00600 {
+		compatible = "arm,cortex-a9-twd-timer";
+		reg = <0xffd00600 0x20>;
+		interrupts = <1 13 0xf01>;
+		clocks = <&periph_clk>;
+	};
+
+	global_timer@ffd00200 {
+		compatible = "arm,cortex-a9-global-timer";
+		reg = <0xffd00200 0x20>;
+		interrupts = <1 11 0xf01>;
+		clocks = <&periph_clk>;
+	};
+
+	clk_gen {
+		compatible = "nvt,clkgen";
+		reg = <0xfd020000 0x400>,
+			  <0xfd670000 0x1000>,
+			  <0xfd720000 0x400>,
+			  <0xfd0f0c18 0x4>;
+	};
+
+	ethernet@fd160000 {
+		compatible = "nvt,synopsys-mac";
+		//MAC & DMA & GPIO mux & Clock pad-in mux & Clock control
+		reg = <0xfd160000 0x0ffc>,
+		      <0xfd161000 0x0054>,
+		      <0xfd100400 0x4>,
+		      <0xfc040bf0 0x4>,
+		      <0xfc040bf4 0x4>;
+		interrupts = <0 42 4>;
+	};
+
+	gic: interrupt-controller@ffd01000 {
+		compatible = "arm,cortex-a9-gic";
+		#interrupt-cells = <3>;
+		#address-cells = <0>;
+		interrupt-controller;
+		reg = <0xffd01000 0x1000>,
+		      <0xffd00100 0x100>;
+	};
+
+	L2: cache-controller@ffe00000 {
+		compatible = "arm,pl310-cache";
+		reg = <0xffe00000 0x1000>;
+		interrupts = <0 96 4>;
+		cache-unified;
+		cache-level = <2>;
+		arm,data-latency = <6 6 6>;
+		arm,tag-latency = <6 6 6>;
+	};
+
+	periph_clk: periph_clk {
+			compatible = "nvt,periph_clk";
+			#clock-cells = <0>;
+			clock-output-names = "periph_clk";
+	};
+
+	ahb_clk: ahb_clk {
+			compatible = "nvt,ahb_clk";
+			#clock-cells = <0>;
+			clock-output-names = "ahb_clk";
+	};
+
+	u2phy_1: nvt_usb2_phy@fd170000 {
+		compatible = "nvt,NT72668-usb2phy";
+		//    APB                 PONRST APB		PHY
+		reg = <0xfd170000 0x500>, <0xfd170000 0x500>,
+				<0xfd170400 0x500>;
+		//offset mask value
+		nvt,phy_setting = <0x18 0xe 0x0>,  //TX parameter
+				<0x18 0xc 0xc>,  //TX parameter
+				<0xdc 0x20 0x0>, //timing parameter
+				<0x14 0x3 0x3>;  //dis parameter
+		nvt,phy_group = <0>;
+	};
+
+	u2phy_2: nvt_usb2_phy@fd178000 {
+		compatible = "nvt,NT72668-usb2phy";
+		//    APB                 PONRST APB		PHY
+		reg = <0xfd178000 0x500>, <0xfd170000 0x500>,
+			<0xfd178400 0x500>;
+		//offset mask value
+		nvt,phy_setting = <0x18 0xe 0x0>,  //TX parameter
+				<0x18 0xc 0xc>,  //TX parameter
+				<0xdc 0x20 0x0>, //timing parameter
+				<0x14 0x3 0x3>;  //dis parameter
+		nvt,phy_group = <0>;
+	};
+
+	u2phy_3: nvt_usb2_phy@fd180000 {
+		compatible = "nvt,NT72668-usb2phy";
+		//    APB                 PONRST APB		PHY
+		reg = <0xfd180000 0x500>, <0xfd180000 0x500>,
+			<0xfd180400 0x500>;
+		//offset mask value
+		nvt,phy_setting = <0xdc 0x20 0x0>, //timing parameter
+				<0x14 0x3 0x3>;  //dis parameter
+		nvt,phy_group = <1>;
+	};
+
+	u2phy_4: nvt_usb2_phy@fd184000 {
+		compatible = "nvt,NT72668-usb2phy";
+		//    APB                 PONRST APB		PHY
+		reg = <0xfd184000 0x500>, <0xfd180000 0x500>,
+			<0xfd184400 0x500>;
+		//offset mask value
+		nvt,phy_setting = <0x18 0xe 0x0>,  //TX parameter
+				<0xdc 0x20 0x0>, //timing paramete
+				<0x14 0x3 0x3>;  //dis parameter
+		nvt,phy_group = <1>;
+	};
+
+	ehci@fc1f0000 {
+		compatible = "nvt,NT72668-ehci";
+		//    AHB
+		reg = <0xfc1f0000 0x200>;
+		interrupts = <0 76 4>;
+		id = <0>;
+		usb2phy = <&u2phy_1>;
+	};
+
+	ehci@fc000000 {
+		compatible = "nvt,NT72668-ehci";
+		//    AHB
+		reg = <0xfc000000 0x200>;
+		interrupts = <0 54 4>;
+		id = <1>;
+		usb2phy = <&u2phy_2>;
+	};
+
+	ehci@fc140000 {
+		compatible = "nvt,NT72668-ehci";
+		//    AHB
+		reg = <0xfc140000 0x200>;
+		interrupts = <0 55 4>;
+		id = <2>;
+		usb2phy = <&u2phy_3>;
+	};
+
+	ehci@fc1a0000 {
+		compatible = "nvt,NT72668-ehci";
+		//    AHB
+		reg = <0xfc1a0000 0x200>;
+		interrupts = <0 56 4>;
+		id = <3>;
+		usb2phy = <&u2phy_4>;
+	};
+
+};

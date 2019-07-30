@@ -1,0 +1,2 @@
+##### Change the following for your environment:
+ROOT_MAKEFILE = TRUE

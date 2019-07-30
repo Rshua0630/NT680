@@ -1,0 +1,26 @@
+Novatek stbc driver
+-------------------
+
+novatek SoC stbc driver
+
+Required properties:
+- compatible : "novatek,nvt-stbc";
+- reg :        register space
+
+Examples:
+        clk_gen {
+                compatible = "novatek,nvt-stbc";
+		reg = <0xfc040000 0x288>;
+		download_reg_ofs = <0x0>;
+		upload_reg_ofs = <0x4>;
+		int_stat_reg_ofs = <0x8>;
+		stbc_patt_reg_ofs = <0x204>;
+		stbc_key_pass_reg_ofs = <0x208>;
+		rtc_base_reg_ofs = <0x100>;
+		rtc_sec_reg_ofs = <0x104>;
+		rtc_day_reg_ofs = <0x108>;
+		rtc_ctrl_reg_ofs = <0x114>;
+		rtc_switch_reg_ofs = <0x200>;
+		bootstrap_reg_ofs = <0x210>;
+        };
+

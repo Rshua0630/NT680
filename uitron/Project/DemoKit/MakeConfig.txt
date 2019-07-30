@@ -1,0 +1,406 @@
+#----------------------------------------------------------------------
+# set encrypt binary parameters
+# EBIN_METHOD
+#   CRC: CRC32
+#   SUM: Checksum
+# EBIN_BADDR
+#   Model name address in binary file (VersionInfo.s), should be 0x50
+# EBIN_MNAME
+#   Model name store in binary file (VersionInfo.s)
+# EBIN_PSTR
+#   Optional parameter, use as additional bytes to generate CRC or checksum
+#----------------------------------------------------------------------
+#EBIN_METHOD = CRC
+EBIN_METHOD = SUM
+
+EBIN_BADDR  = 0x150
+EBIN_MNAME  = NT$(CHIP)
+EBIN_PSTR   =
+
+#----------------------------------------------------------------------
+# modelext build-in ON / OFF
+#----------------------------------------------------------------------
+# MODELEXT_BUILT_IN_ON
+# MODELEXT_BUILT_IN_OFF
+MODELEXT_BUILT_IN = MODELEXT_BUILT_IN_OFF
+
+#----------------------------------------------------------------------
+# UI_STYLE parameters
+#----------------------------------------------------------------------
+UI_STYLE_ALL = UI_STYLE_SPORTCAM UI_STYLE_CARDV UI_STYLE_IPCAM UI_STYLE_TOUCH UI_STYLE_USB_DISK
+
+#----------------------------------------------------------------------
+# C define
+#----------------------------------------------------------------------
+MODELCONFIG_CFLAGS = \
+	-D_MODEL_$(MODEL)_ \
+	-D_BIN_NAME_='"$(BIN_NAME)"' \
+	-D_BIN_NAME_T_='"$(BIN_NAME_T)"' \
+	-D_EMBMEM_BLK_SIZE_=$(EMBMEM_BLK_SIZE) \
+	-D_BOARD_DRAM_ADDR_=$(BOARD_DRAM_ADDR) \
+	-D_BOARD_DRAM_SIZE_=$(BOARD_DRAM_SIZE) \
+	-D_BOARD_REV_ADDR_=$(BOARD_REV_ADDR) \
+	-D_BOARD_REV_SIZE_=$(BOARD_REV_SIZE) \
+	-D_BOARD_IPC_ADDR_=$(BOARD_IPC_ADDR) \
+	-D_BOARD_IPC_SIZE_=$(BOARD_IPC_SIZE) \
+	-D_BOARD_LINUX_ADDR_=$(BOARD_LINUX_ADDR) \
+	-D_BOARD_LINUX_SIZE_=$(BOARD_LINUX_SIZE) \
+	-D_BOARD_UBOOT_ADDR_=$(BOARD_UBOOT_ADDR) \
+	-D_BOARD_UBOOT_SIZE_=$(BOARD_UBOOT_SIZE) \
+	-D_BOARD_UITRON_ADDR_=$(BOARD_UITRON_ADDR) \
+	-D_BOARD_UITRON_SIZE_=$(BOARD_UITRON_SIZE) \
+	-D_BOARD_UITRON_RESV_SIZE_=$(BOARD_UITRON_RESV_SIZE) \
+	-D_BOARD_RAMDISK_ADDR_=$(BOARD_RAMDISK_ADDR) \
+	-D_BOARD_RAMDISK_SIZE_=$(BOARD_RAMDISK_SIZE) \
+	-D_BOARD_DSP1_ADDR_=$(BOARD_DSP1_ADDR) \
+	-D_BOARD_DSP1_SIZE_=$(BOARD_DSP1_SIZE) \
+	-D_BOARD_DSP2_ADDR_=$(BOARD_DSP2_ADDR) \
+	-D_BOARD_DSP2_SIZE_=$(BOARD_DSP2_SIZE) \
+	-D_BOARD_LOADER_ADDR_=$(BOARD_LOADER_ADDR) \
+	-D_BOARD_LOADER_SIZE_=$(BOARD_LOADER_SIZE) \
+	-D_BOARD_EXTDRAM_ADDR_=$(BOARD_EXTDRAM_ADDR) \
+	-D_BOARD_EXTDRAM_SIZE_=$(BOARD_EXTDRAM_SIZE) \
+	-D_CHIP_$(CHIP)_ \
+	-D_CHIP_NAME_='"NT$(CHIP)"' \
+	-D_$(CHIPCFG)_ \
+	-D_$(MODELEXT_BUILT_IN)_ \
+	-D_$(HW_STAGE)_ \
+	-D_$(FW_TYPE)_ \
+	-D_$(KEY_METHOD)_ \
+	-D_$(CPU1_TYPE)_ \
+	-D_$(CPU2_TYPE)_ \
+	-D_$(DSP1_TYPE)_ \
+	-D_$(DSP2_TYPE)_ \
+	-D_$(NETWORK_TYPE)_ \
+	-D_$(CLOCK)_ \
+	-D_$(LCD)_ \
+	-D_$(LCD2)_ \
+	-D_$(TV)_ \
+	-D_$(HDMI)_ \
+	-D_$(LENSDRV)_ \
+	-D_$(EMBMEM)_ \
+	-D_$(GYROEXT)_ \
+	-D_$(IRRX)_ \
+	-D_$(GSENSOREXT)_ \
+	-D_$(UI_STYLE)_ \
+	-D_$(AUDIOEXT)_ \
+	-D_$(GPS)_ \
+	-D_$(TOUCH)_ \
+	-D_$(VSMEDIA)_ \
+	-D_$(USB1_TYPE)_ \
+	-D_$(USB2_TYPE)_ \
+	-D_$(P2PCAM)_\
+	-D_$(NVT_LINUX_SMP)_\
+	-D_$(NVT_DEFAULT_NETWORK_BOOT_PROTOCOL)_\
+	-D_$(NVT_DEFAULT_CVBS_TYPE)_\
+	-D_$(NVT_ROOTFS_TYPE)_\
+	-D_$(NVT_CURL_SSL)_\
+	-D_$(GPROF_TOOL)_\
+	-D_$(NVT_UBOOT_ENV_IN_STORG_SUPPORT)_\
+	-D_$(NVT_ETHERNET)_\
+	-D_$(NVT_SDIO_WIFI)_\
+	-D_$(NVT_USB_WIFI)_\
+	-D_$(NVT_USB_4G)_\
+	-D_$(NVT_ITRON_DRIVE_A)_\
+	-D_$(NVT_ITRON_DRIVE_B)_\
+	-D_$(NVT_ITRON_DRIVE_C)_\
+	-D_$(NVT_ITRON_DRIVE_D)_\
+	-D_$(WIFI_RTK_MDL)_\
+	-D_$(WIFI_BRCM_MDL)_\
+	-D_$(WIFI_NVT_MDL)_\
+	-D_$(IQ_PARAM1)_ \
+	-D_IQ_PARAM1_$(IQ_PARAM1)_ \
+	-D_IQ_PARAM1_='"$(IQ_PARAM1)"' \
+	-D_$(IQ_PARAM2)_ \
+	-D_IQ_PARAM2_$(IQ_PARAM2)_ \
+	-D_IQ_PARAM2_='"$(IQ_PARAM2)"' \
+	-D_$(IQ_PARAM3)_ \
+	-D_IQ_PARAM3_$(IQ_PARAM3)_ \
+	-D_IQ_PARAM3_='"$(IQ_PARAM3)"' \
+	-D_$(IQ_PARAM4)_ \
+	-D_IQ_PARAM4_$(IQ_PARAM4)_ \
+	-D_IQ_PARAM4_='"$(IQ_PARAM4)"' \
+	-D_$(IQ_PARAM5)_ \
+	-D_IQ_PARAM5_$(IQ_PARAM5)_ \
+	-D_IQ_PARAM5_='"$(IQ_PARAM5)"' \
+	-D_$(IQ_PARAM6)_ \
+	-D_IQ_PARAM6_$(IQ_PARAM6)_ \
+	-D_IQ_PARAM6_='"$(IQ_PARAM6)"' \
+	-D_$(IQ_PARAM7)_ \
+	-D_IQ_PARAM7_$(IQ_PARAM7)_ \
+	-D_IQ_PARAM7_='"$(IQ_PARAM7)"' \
+	-D_$(IQ_PARAM8)_ \
+	-D_IQ_PARAM8_$(IQ_PARAM8)_ \
+	-D_IQ_PARAM8_='"$(IQ_PARAM8)"' \
+	-D_$(AWB_PARAM1)_ \
+	-D_AWB_PARAM1_$(AWB_PARAM1)_ \
+	-D_AWB_PARAM1_='"$(AWB_PARAM1)"' \
+	-D_$(AWB_PARAM2)_ \
+	-D_AWB_PARAM2_$(AWB_PARAM2)_ \
+	-D_AWB_PARAM2_='"$(AWB_PARAM2)"' \
+	-D_$(AWB_PARAM3)_ \
+	-D_AWB_PARAM3_$(AWB_PARAM3)_ \
+	-D_AWB_PARAM3_='"$(AWB_PARAM3)"' \
+	-D_$(AWB_PARAM4)_ \
+	-D_AWB_PARAM4_$(AWB_PARAM4)_ \
+	-D_AWB_PARAM4_='"$(AWB_PARAM4)"' \
+	-D_$(AWB_PARAM5)_ \
+	-D_AWB_PARAM5_$(AWB_PARAM5)_ \
+	-D_AWB_PARAM5_='"$(AWB_PARAM5)"' \
+	-D_$(AWB_PARAM6)_ \
+	-D_AWB_PARAM6_$(AWB_PARAM6)_ \
+	-D_AWB_PARAM6_='"$(AWB_PARAM6)"' \
+	-D_$(AWB_PARAM7)_ \
+	-D_AWB_PARAM7_$(AWB_PARAM7)_ \
+	-D_AWB_PARAM7_='"$(AWB_PARAM7)"' \
+	-D_$(AWB_PARAM8)_ \
+	-D_AWB_PARAM8_$(AWB_PARAM8)_ \
+	-D_AWB_PARAM8_='"$(AWB_PARAM8)"' \
+	-D_$(AE_PARAM1)_ \
+	-D_AE_PARAM1_$(AE_PARAM1)_ \
+	-D_AE_PARAM1_='"$(AE_PARAM1)"' \
+	-D_$(AE_PARAM2)_ \
+	-D_AE_PARAM2_$(AE_PARAM2)_ \
+	-D_AE_PARAM2_='"$(AE_PARAM2)"' \
+	-D_$(AE_PARAM3)_ \
+	-D_AE_PARAM3_$(AE_PARAM3)_ \
+	-D_AE_PARAM3_='"$(AE_PARAM3)"' \
+	-D_$(AE_PARAM4)_ \
+	-D_AE_PARAM4_$(AE_PARAM4)_ \
+	-D_AE_PARAM4_='"$(AE_PARAM4)"' \
+	-D_$(AE_PARAM5)_ \
+	-D_AE_PARAM5_$(AE_PARAM5)_ \
+	-D_AE_PARAM5_='"$(AE_PARAM5)"' \
+	-D_$(AE_PARAM6)_ \
+	-D_AE_PARAM6_$(AE_PARAM6)_ \
+	-D_AE_PARAM6_='"$(AE_PARAM6)"' \
+	-D_$(AE_PARAM7)_ \
+	-D_AE_PARAM7_$(AE_PARAM7)_ \
+	-D_AE_PARAM7_='"$(AE_PARAM7)"' \
+	-D_$(AE_PARAM8)_ \
+	-D_AE_PARAM8_$(AE_PARAM8)_ \
+	-D_AE_PARAM8_='"$(AE_PARAM8)"' \
+	-D_$(SSL)_\
+	-D_$(NVT_SDIO2_PAD_POWER)_\
+	-D_$(NVT_SDIO_DS_MODE_DATA_DRIVING_CONFIG)_\
+	-D_$(NVT_SDIO_DS_MODE_CMD_DRIVING_CONFIG)_\
+	-D_$(NVT_SDIO_DS_MODE_CLK_DRIVING_CONFIG)_\
+	-D_$(NVT_SDIO_HS_MODE_DATA_DRIVING_CONFIG)_\
+	-D_$(NVT_SDIO_HS_MODE_CMD_DRIVING_CONFIG)_\
+	-D_$(NVT_SDIO_HS_MODE_CLK_DRIVING_CONFIG)_\
+	-D_$(NVT_SDIO_SDR50_MODE_DATA_DRIVING_CONFIG)_\
+	-D_$(NVT_SDIO_SDR50_MODE_CMD_DRIVING_CONFIG)_\
+	-D_$(NVT_SDIO_SDR50_MODE_CLK_DRIVING_CONFIG)_\
+	-D_$(NVT_SDIO_SDR104_MODE_DATA_DRIVING_CONFIG)_\
+	-D_$(NVT_SDIO_SDR104_MODE_CMD_DRIVING_CONFIG)_\
+	-D_$(NVT_SDIO_SDR104_MODE_CLK_DRIVING_CONFIG)_\
+#----------------------------------------------------------------------
+# model_ipl_cfg
+#----------------------------------------------------------------------
+MODELCONFIG_IPL_CFLAGS = \
+	-D_$(IPL1)_ \
+	-D_IPL1_$(IPL1)_ \
+	-D_IPL1_='"$(IPL1)"' \
+	-D_IPL1_EXT_LIB_TAB_=$(IPL1)_EXT_LIB_TAB \
+	-D_$(IPL2)_ \
+	-D_IPL2_$(IPL2)_ \
+	-D_IPL2_='"$(IPL2)"' \
+	-D_IPL2_EXT_LIB_TAB_=$(IPL2)_EXT_LIB_TAB \
+	-D_$(IPL3)_ \
+	-D_IPL3_$(IPL3)_ \
+	-D_IPL3_='"$(IPL3)"' \
+	-D_IPL3_EXT_LIB_TAB_=$(IPL3)_EXT_LIB_TAB \
+	-D_$(IPL4)_ \
+	-D_IPL4_$(IPL4)_ \
+	-D_IPL4_='"$(IPL4)"' \
+	-D_IPL4_EXT_LIB_TAB_=$(IPL4)_EXT_LIB_TAB \
+	-D_$(IPL5)_ \
+	-D_IPL5_$(IPL5)_ \
+	-D_IPL5_='"$(IPL5)"' \
+	-D_IPL5_EXT_LIB_TAB_=$(IPL5)_EXT_LIB_TAB \
+	-D_$(IPL6)_ \
+	-D_IPL6_$(IPL6)_ \
+	-D_IPL6_='"$(IPL6)"' \
+	-D_IPL6_EXT_LIB_TAB_=$(IPL6)_EXT_LIB_TAB \
+	-D_$(IPL7)_ \
+	-D_IPL7_$(IPL7)_ \
+	-D_IPL7_='"$(IPL7)"' \
+	-D_IPL7_EXT_LIB_TAB_=$(IPL7)_EXT_LIB_TAB \
+	-D_$(IPL8)_ \
+	-D_IPL8_$(IPL8)_ \
+	-D_IPL8_='"$(IPL8)"' \
+	-D_IPL8_EXT_LIB_TAB_=$(IPL8)_EXT_LIB_TAB \
+	-D_IPL_EXT1_$(IPL_EXT1)_ \
+	-D_IPL_EXT1_='"$(IPL_EXT1)"' \
+	-D_IPL_EXT1_EXT_LIB_TAB_=$(IPL_EXT1)_EXT_LIB_TAB \
+	-D_IPL_EXT2_$(IPL_EXT2)_ \
+	-D_IPL_EXT2_='"$(IPL_EXT2)"' \
+	-D_IPL_EXT2_EXT_LIB_TAB_=$(IPL_EXT2)_EXT_LIB_TAB \
+	-D_IPL_EXT3_$(IPL_EXT3)_ \
+	-D_IPL_EXT3_='"$(IPL_EXT3)"' \
+	-D_IPL_EXT3_EXT_LIB_TAB_=$(IPL_EXT3)_EXT_LIB_TAB \
+	-D_IPL_EXT4_$(IPL_EXT4)_ \
+	-D_IPL_EXT4_='"$(IPL_EXT4)"' \
+	-D_IPL_EXT4_EXT_LIB_TAB_=$(IPL_EXT4)_EXT_LIB_TAB \
+
+
+#----------------------------------------------------------------------
+# model_ipl_cal_cfg
+#----------------------------------------------------------------------
+MODELCONFIG_IPL_CAL_CFLAGS = \
+	-D_$(IPL_CAL1)_ \
+	-D_IPL_CAL1_$(IPL_CAL1)_ \
+	-D_IPL_CAL1_='"$(IPL_CAL1)"' \
+	-D_IPL_CAL1_EXT_LIB_TAB_=$(IPL_CAL1)_EXT_LIB_TAB \
+	-D_$(IPL_CAL2)_ \
+	-D_IPL_CAL2_$(IPL_CAL2)_ \
+	-D_IPL_CAL2_='"$(IPL_CAL2)"' \
+	-D_IPL_CAL2_EXT_LIB_TAB_=$(IPL_CAL2)_EXT_LIB_TAB \
+	-D_$(IPL_CAL3)_ \
+	-D_IPL_CAL3_$(IPL_CAL3)_ \
+	-D_IPL_CAL3_='"$(IPL_CAL3)"' \
+	-D_IPL_CAL3_EXT_LIB_TAB_=$(IPL_CAL3)_EXT_LIB_TAB \
+	-D_$(IPL_CAL4)_ \
+	-D_IPL_CAL4_$(IPL_CAL4)_ \
+	-D_IPL_CAL4_='"$(IPL_CAL4)"' \
+	-D_IPL_CAL4_EXT_LIB_TAB_=$(IPL_CAL4)_EXT_LIB_TAB \
+	-D_$(IPL_CAL5)_ \
+	-D_IPL_CAL5_$(IPL_CAL5)_ \
+	-D_IPL_CAL5_='"$(IPL_CAL5)"' \
+	-D_IPL_CAL5_EXT_LIB_TAB_=$(IPL_CAL5)_EXT_LIB_TAB \
+	-D_$(IPL_CAL6)_ \
+	-D_IPL_CAL6_$(IPL_CAL6)_ \
+	-D_IPL_CAL6_='"$(IPL_CAL6)"' \
+	-D_IPL_CAL6_EXT_LIB_TAB_=$(IPL_CAL6)_EXT_LIB_TAB \
+	-D_$(IPL_CAL7)_ \
+	-D_IPL_CAL7_$(IPL_CAL7)_ \
+	-D_IPL_CAL7_='"$(IPL_CAL7)"' \
+	-D_IPL_CAL7_EXT_LIB_TAB_=$(IPL_CAL7)_EXT_LIB_TAB \
+	-D_$(IPL_CAL8)_ \
+	-D_IPL_CAL8_$(IPL_CAL8)_ \
+	-D_IPL_CAL8_='"$(IPL_CAL8)"' \
+	-D_IPL_CAL8_EXT_LIB_TAB_=$(IPL_CAL8)_EXT_LIB_TAB \
+
+#----------------------------------------------------------------------
+# model_sensor_cfg
+#----------------------------------------------------------------------
+MODELCONFIG_SENSOR_CFLAGS = \
+	-D_$(SENSOR1)_ \
+	-D_SENSOR1_$(SENSOR1)_ \
+	-D_SENSOR1_='"$(SENSOR1)"' \
+	-D_$(SENSOR2)_ \
+	-D_SENSOR2_$(SENSOR2)_ \
+	-D_SENSOR2_='"$(SENSOR2)"' \
+	-D_$(SENSOR3)_ \
+	-D_SENSOR3_$(SENSOR3)_ \
+	-D_SENSOR3_='"$(SENSOR3)"' \
+	-D_$(SENSOR4)_ \
+	-D_SENSOR4_$(SENSOR4)_ \
+	-D_SENSOR4_='"$(SENSOR4)"' \
+	-D_$(SENSOR5)_ \
+	-D_SENSOR5_$(SENSOR5)_ \
+	-D_SENSOR5_='"$(SENSOR5)"' \
+	-D_$(SENSOR6)_ \
+	-D_SENSOR6_$(SENSOR6)_ \
+	-D_SENSOR6_='"$(SENSOR6)"' \
+	-D_$(SENSOR7)_ \
+	-D_SENSOR7_$(SENSOR7)_ \
+	-D_SENSOR7_='"$(SENSOR7)"' \
+	-D_$(SENSOR8)_ \
+	-D_SENSOR8_$(SENSOR8)_ \
+	-D_SENSOR8_='"$(SENSOR8)"' \
+	-D_$(SENSOR_EXT1)_ \
+	-D_SENSOR_EXT1_='"$(SENSOR_EXT1)"' \
+	-D_$(SENSOR_EXT2)_ \
+	-D_SENSOR_EXT2_='"$(SENSOR_EXT2)"' \
+	-D_$(SENSOR_EXT3)_ \
+	-D_SENSOR_EXT3_='"$(SENSOR_EXT3)"' \
+	-D_$(SENSOR_EXT4)_ \
+	-D_SENSOR_EXT4_='"$(SENSOR_EXT4)"' \
+
+#----------------------------------------------------------------------
+# model_rsc_cfg
+#----------------------------------------------------------------------
+MODELCONFIG_RSC_CFLAGS = \
+	-D_$(RSC)_ \
+	-D_RSC_$(RSC)_ \
+	-D_RSC_='"$(RSC)"' \
+	-D_RSC_EXT_LIB_TAB_=$(RSC)_EXT_LIB_TAB \
+#----------------------------------------------------------------------
+# model_cfg string for verifing uitron and linux using the same modelconfig.txt
+# only keep important information to avoid build fail on Win32 because of shell buffer too small
+#----------------------------------------------------------------------
+MODELCONFIG_CFG = \
+	-D_MODEL_$(MODEL)_ \
+	-D_BIN_NAME_='"$(BIN_NAME)"' \
+	-D_BIN_NAME_T_='"$(BIN_NAME_T)"' \
+	-D_EMBMEM_BLK_SIZE_=$(EMBMEM_BLK_SIZE) \
+	-D_BOARD_DRAM_ADDR_=$(BOARD_DRAM_ADDR) \
+	-D_BOARD_DRAM_SIZE_=$(BOARD_DRAM_SIZE) \
+	-D_BOARD_REV_ADDR_=$(BOARD_REV_ADDR) \
+	-D_BOARD_REV_SIZE_=$(BOARD_REV_SIZE) \
+	-D_BOARD_IPC_ADDR_=$(BOARD_IPC_ADDR) \
+	-D_BOARD_IPC_SIZE_=$(BOARD_IPC_SIZE) \
+	-D_BOARD_LINUX_ADDR_=$(BOARD_LINUX_ADDR) \
+	-D_BOARD_LINUX_SIZE_=$(BOARD_LINUX_SIZE) \
+	-D_BOARD_UBOOT_ADDR_=$(BOARD_UBOOT_ADDR) \
+	-D_BOARD_UBOOT_SIZE_=$(BOARD_UBOOT_SIZE) \
+	-D_BOARD_UITRON_ADDR_=$(BOARD_UITRON_ADDR) \
+	-D_BOARD_UITRON_SIZE_=$(BOARD_UITRON_SIZE) \
+	-D_BOARD_UITRON_RESV_SIZE_=$(BOARD_UITRON_RESV_SIZE) \
+	-D_BOARD_ECOS_ADDR_=$(BOARD_ECOS_ADDR) \
+	-D_BOARD_ECOS_SIZE_=$(BOARD_ECOS_SIZE) \
+	-D_BOARD_RAMDISK_ADDR_=$(BOARD_RAMDISK_ADDR) \
+	-D_BOARD_RAMDISK_SIZE_=$(BOARD_RAMDISK_SIZE) \
+	-D_BOARD_DSP1_ADDR_=$(BOARD_DSP1_ADDR) \
+	-D_BOARD_DSP1_SIZE_=$(BOARD_DSP1_SIZE) \
+	-D_BOARD_DSP2_ADDR_=$(BOARD_DSP2_ADDR) \
+	-D_BOARD_DSP2_SIZE_=$(BOARD_DSP2_SIZE) \
+	-D_BOARD_LOADER_ADDR_=$(BOARD_LOADER_ADDR) \
+	-D_BOARD_LOADER_SIZE_=$(BOARD_LOADER_SIZE) \
+	-D_BOARD_EXTDRAM_ADDR_=$(BOARD_EXTDRAM_ADDR) \
+	-D_BOARD_EXTDRAM_SIZE_=$(BOARD_EXTDRAM_SIZE) \
+	-D_CHIP_$(CHIP)_ \
+	-D_CHIP_NAME_='"NT$(CHIP)"' \
+	-D_FW_NAME_='"FW$(CHIP)A.bin"' \
+	-D_RUN_NAME_='"FW$(CHIP)T.bin"' \
+	-D_EXT_NAME_='"FW$(CHIP)A.ext.bin"' \
+	-D_$(MODELEXT_BUILT_IN)_ \
+	-D_$(MODELEXT)_ \
+	-D_$(HW_STAGE)_ \
+	-D_$(FW_TYPE)_ \
+	-D_$(KEY_METHOD)_ \
+	-D_$(CPU1_TYPE)_ \
+	-D_$(CPU2_TYPE)_ \
+	-D_$(DSP1_TYPE)_ \
+	-D_$(DSP2_TYPE)_ \
+	-D_$(NETWORK_TYPE)_ \
+	-D_$(GPROF_TOOL)_ \
+	-D_$(USB1_TYPE)_ \
+	-D_$(USB2_TYPE)_ \
+	-D_$(NVT_ETHERNET)_\
+	-D_$(NVT_SDIO_WIFI)_\
+	-D_$(NVT_USB_WIFI)_\
+	-D_$(NVT_USB_4G)_ \
+	-D_$(WIFI_RTK_MDL)_\
+	-D_$(WIFI_BRCM_MDL)_\
+	-D_$(WIFI_NVT_MDL)_\
+	-D_$(SENSOR1)_ \
+	-D_$(SENSOR2)_ \
+	-D_$(SENSOR3)_ \
+	-D_$(SENSOR4)_ \
+	-D_$(SENSOR5)_ \
+	-D_$(SENSOR6)_ \
+	-D_$(SENSOR7)_ \
+	-D_$(SENSOR8)_
+
+MODELCONFIG_STR_CFLAGS = \
+	-D_MODEL_CFG_STR_='"$(MODELCONFIG_CFG);"'
+
+C_DEFINE_EXT = \
+    $(MODELCONFIG_CFLAGS) \
+    $(MODELCONFIG_STR_CFLAGS) \
+    $(MODELCONFIG_IPL_CFLAGS) \
+    $(MODELCONFIG_IPL_CAL_CFLAGS) \
+    $(MODELCONFIG_RSC_CFLAGS) \
+    $(MODELCONFIG_SENSOR_CFLAGS)

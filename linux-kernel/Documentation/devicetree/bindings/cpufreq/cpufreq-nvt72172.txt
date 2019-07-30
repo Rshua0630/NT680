@@ -1,0 +1,27 @@
+Novatek cpufreq driver
+-------------------
+
+novatek SoC cpufreq driver for CPU frequency scaling.
+It supports both uniprocessor (UP) and symmetric multiprocessor (SMP) systems
+which share clock across all CPUs.
+
+Required properties:
+- compatible : "nvt,nvt72xxx-cpufreq";
+- reg :        register space
+
+Both required and optional properties listed above must be defined under node
+/cpus/cpu@0.
+
+Examples:
+--------
+        nvt-cpufreq {
+                compatible = "nvt,nvt72xxx-cpufreq";
+                operating-points = <
+                        /* KHz    uV , voltage is fake*/
+                        1000000 1000000
+                        800000  1000000
+                        500000  1000000
+                        /* 100000  1000000 */
+                >;
+        };
+

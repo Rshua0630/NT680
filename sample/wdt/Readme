@@ -1,0 +1,6 @@
+User mode kick:
+	modprobe na51000_wdt kick_daemon=0 wdt_time=10
+	wdt_test.sh a&
+
+Kernel mode kick:
+	modprobe na51000_wdt kick_daemon=0 wdt_time=10

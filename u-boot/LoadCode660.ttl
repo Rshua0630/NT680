@@ -1,0 +1,76 @@
+connect 'localhost:4444 /DS /T=1'
+
+sendln 'halt'
+wait '>'
+
+sendln 'reset init'
+wait '>'
+
+sendln 'mww 0xc0010024 0x5'
+sendln 'mww 0xc0020074 0x10000C00'
+
+;load u-boot
+getenv 'UBOOT_PATH' UBOOT_PATH
+getenv 'UBOOT_ADDR' UBOOT_ADDR
+send 'load_image '
+send param2
+send UBOOT_PATH
+send ' '
+sendln UBOOT_ADDR
+wait '>'
+wait '>'
+
+;load uImage
+getenv 'UIMAGE_PATH' UIMAGE_PATH
+getenv 'UIMAGE_ADDR' UIMAGE_ADDR
+send 'load_image '
+send param2
+send UIMAGE_PATH
+send ' '
+sendln UIMAGE_ADDR
+wait '>'
+wait '>'
+
+;load root-fs
+getenv 'ROOTFS_PATH' ROOTFS_PATH
+getenv 'ROOTFS_ADDR' ROOTFS_ADDR
+send 'load_image '
+send param2
+send ROOTFS_PATH
+send ' '
+sendln ROOTFS_ADDR
+wait '>'
+wait '>'
+
+;TIMER and GPIO are turned on both CPU1 and CPU2 interrupt
+sendln 'mww 0xC0080010 0x01000001'
+wait '>'
+
+;start at CPU2
+getenv 'BASE_ADDR' BASE_ADDR
+strcompare param3 'CPU2'
+if result=0 then
+    send 'mww 0xC0090000 '
+    sendln BASE_ADDR
+    wait '>'
+    sendln 'mww 0xC0020090 0x01'
+    wait '>'
+    sendln 'mww 0xC0020094 0x05'
+    wait '>'
+    sendln 'mww 0xC0080004 0xFFFFEFFF'
+    wait '>'
+    sendln 'mww 0xC0080014 0x00001000'
+endif
+
+strcompare param3 'CPU1'
+if result=0 then
+    send 'reg pc '
+    sendln UBOOT_ADDR
+    wait '>'
+    sendln 'resume'
+    wait '>'
+endif
+
+sendln 'exit'
+
+disconnect 0

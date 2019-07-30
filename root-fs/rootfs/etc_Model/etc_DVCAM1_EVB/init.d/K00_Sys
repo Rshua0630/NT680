@@ -1,0 +1,5 @@
+#!/bin/sh
+
+nvtipcd -pwroff &
+echo "K00 power off"
+

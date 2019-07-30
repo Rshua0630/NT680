@@ -1,0 +1,668 @@
+#----------------------------------------------------------------------
+# Get the source full path, include directories
+#----------------------------------------------------------------------
+# query SRC, ASM, INC_DIR
+include $(MAKE_COMMON_DIR)/InputSource.txt
+
+#----------------------------------------------------------------------
+# set the basic ASM flags
+# PLATFORM_AFLAGS := -march=armv7-a -mcpu=cortex-a9 -mabi=aapcs -msoft-float
+# -mfloat-abi=softfp <==> -mfloat-abi=hard
+#----------------------------------------------------------------------
+ifeq "$(FPU)" "hard"
+PLATFORM_AFLAGS := -mcpu=$(CPU) -mfpu=neon -mfloat-abi=$(FPU)
+else
+PLATFORM_AFLAGS := -mcpu=$(CPU) -mfloat-abi=$(FPU)
+endif
+
+
+
+#----------------------------------------------------------------------
+# set the basic C flags
+# Reference
+# http://gcc.gnu.org/onlinedocs/gcc-4.4.7/gcc/
+# http://gcc.gnu.org/onlinedocs/gcc-4.4.7/gcc/Option-Summary.html#Option-Summary
+#----------------------------------------------------------------------
+#----------------------------------------------------------------------
+# Overall Options
+#----------------------------------------------------------------------
+# -c    : Compile the source files, but do not link
+# -pipe : Use pipes rather than temporary files for communication between the various stages of compilation
+PLATFORM_CFLAGS := -c -pipe
+
+#----------------------------------------------------------------------
+# Machine Dependent Options
+#----------------------------------------------------------------------
+# -march=24kec  : Generate code that will run on MIPS 24KEc
+# -mtune=24kec  : Optimize for MIPS 24KEc
+# -mdsp         : Use revision 1 of the MIPS DSP ASE
+# -EL           : Generate little-endian code
+# -msoft-float  : Do not use floating-point coprocessor instructions
+# -marm         : Tell compiler do not build c code as thumb2 instruction
+#----------------------------------------------------------------------
+ifeq "$(USE_NEON)" "on"
+PLATFORM_CFLAGS += -mcpu=$(CPU) -marm -mno-thumb-interwork -mfloat-abi=softfp -mfpu=neon-fp-armv8 -ftree-vectorize
+else
+ifeq "$(FPU)" "hard"
+PLATFORM_CFLAGS += -mcpu=$(CPU) -marm -mno-thumb-interwork -mfloat-abi=$(FPU) -mfpu=neon -ftree-vectorize
+else
+PLATFORM_CFLAGS += -mcpu=$(CPU) -marm -mno-thumb-interwork -mfloat-abi=$(FPU)
+endif
+endif
+# PLATFORM_CFLAGS += -mtune=$(CPU) -march=armv7-a -marm -mhard-float -mfpu=neon-vfpv4 -mno-thumb-interwork -mno-sched-prolog
+# PLATFORM_CFLAGS += -mtune=$(CPU) -march=armv7-a -marm -msoft-float -mno-thumb-interwork -mno-sched-prolog
+
+#----------------------------------------------------------------------
+# Warning Options
+#----------------------------------------------------------------------
+# -Wall         : This enables all the warnings about constructions that some users consider questionable,
+#                 and that are easy to avoid (or modify to prevent the warning), even in conjunction with macros.
+#         NOTE: -Wall turns on the following warning flags:
+#         -Waddress
+#         -Warray-bounds (only with -O2)
+#         -Wc++11-compat
+#         -Wchar-subscripts
+#         -Wenum-compare (in C/ObjC; this is on by default in C++)
+#         -Wimplicit-int (C and Objective-C only)
+#         -Wimplicit-function-declaration (C and Objective-C only)
+#         -Wcomment
+#         -Wformat
+#         -Wmain (only for C/ObjC and unless -ffreestanding)
+#         -Wmaybe-uninitialized
+#         -Wmissing-braces (only for C/ObjC)
+#         -Wnonnull
+#         -Wparentheses
+#         -Wpointer-sign
+#         -Wreorder
+#         -Wreturn-type
+#         -Wsequence-point
+#         -Wsign-compare (only in C++)
+#         -Wstrict-aliasing
+#         -Wstrict-overflow=1
+#         -Wswitch
+#         -Wtrigraphs
+#         -Wuninitialized
+#         -Wunknown-pragmas
+#         -Wunused-function
+#         -Wunused-label
+#         -Wunused-value
+#         -Wunused-variable
+#         -Wvolatile-register-var
+# -Wundef               : Warn if an undefined identifier is evaluated in an `#if' directive
+# -Wsign-compare        : Warn when a comparison between signed and unsigned values could produce an incorrect result when the signed value is converted to unsigned
+# -Wno-missing-braces   : Trun off "Warn if an aggregate or union initializer is not fully bracketed". For XXX = {0}; statement.
+# -Wstrict-prototypes   : Warn if a function is declared or defined without specifying the argument types
+# -Wimplicit-function-declaration   : Warn when a function is used before being declared
+# -Wmissing-prototypes  : Warn about global funcs without prototypes
+# -Wmissing-declarations: Warn about global funcs without previous declarations
+# -Werror               : Warnning as error
+#----------------------------------------------------------------------
+PLATFORM_CFLAGS += -Wall -Wundef -Wsign-compare -Wno-missing-braces -Wstrict-prototypes
+ifeq "$(OUTPUT_FILE)" "BIN"
+else
+ifeq "$(INCLUDE_RULE)" "ON"
+#    PLATFORM_CFLAGS += -Werror=implicit-function-declaration -Werror=missing-prototypes -Werror=missing-declarations
+    PLATFORM_CFLAGS += -Wimplicit-function-declaration -Wmissing-prototypes -Wmissing-declarations
+endif
+endif
+
+ifeq "$(shell uname)" "Linux"
+PLATFORM_CFLAGS += -Werror
+endif
+
+#----------------------------------------------------------------------
+# C Language Options
+#----------------------------------------------------------------------
+# -fno-builtin  : Don't recognize built-in functions that do not begin with `__builtin_' as prefix
+# -ffreestanding: Assert that compilation takes place in a freestanding environment
+#----------------------------------------------------------------------
+# Code Generation Options
+#----------------------------------------------------------------------
+# -fno-common   : The compiler should place uninitialized global variables in the data section of the object file, rather than generating them as common blocks
+# -fshort-wchar : Override the underlying type for `wchar_t' to be `short unsigned int' instead of the default for the target.
+#----------------------------------------------------------------------
+# Optimization Options
+#----------------------------------------------------------------------
+# -fno-strict-aliasing          : Do not warn about code that breaks strict aliasing rules
+# -fno-optimize-sibling-calls   : Don't optimize sibling and tail recursive calls
+# -fno-omit-frame-pointer       : Keep the frame pointer in a register for functions that don't need one
+#----------------------------------------------------------------------
+PLATFORM_CFLAGS += -fno-builtin -ffreestanding -fno-common -fshort-wchar -fno-strict-aliasing -fno-optimize-sibling-calls -fno-omit-frame-pointer
+
+# C Language Options for eCos system
+ifeq "$(USE_ECOS_KERNEL)" "ON"
+    PLATFORM_CFLAGS += -D__ECOS -D__UITRON
+    GCCFLAGS +=-D__UITRON
+else
+    PLATFORM_CFLAGS += -nostdinc -D__UITRON
+    # For make dep
+    GCCFLAGS +=-D__UITRON
+endif
+
+# C Language Options for network
+ifeq "$(NETWORK)" "ON_CPU1"
+    PLATFORM_CFLAGS += -D_NETWORK_ -D_NETWORK_ON_CPU1_
+    GCCFLAGS +=-D_NETWORK_ -D_NETWORK_ON_CPU1_
+else
+	ifeq "$(NETWORK)" "ON_CPU2"
+	    PLATFORM_CFLAGS += -D_NETWORK_ -D_NETWORK_ON_CPU2_
+	    GCCFLAGS +=-D_NETWORK_ -D_NETWORK_ON_CPU2_
+	else
+	    PLATFORM_CFLAGS += -D_NETWORK_OFF_
+	    GCCFLAGS +=-D_NETWORK_OFF_
+	endif
+endif
+
+ifeq "$(S3_POWER_DOWN_MODE)" "ON"
+    PLATFORM_CFLAGS += -D__S3_POWER_DOWN
+    GCCFLAGS +=-D__S3_POWER_DOWN
+endif
+
+# Remove -Otime (There is no such option in GCC, GCC default is optimize for time)
+# Replace -OSpace (-Os in GCC)
+CFLAGS_D := $(filter-out -Otime, $(CFLAGS_D))
+CFLAGS_D := $(CFLAGS_D:-Ospace=-Os)
+CFLAGS_R := $(filter-out -Otime, $(CFLAGS_R))
+CFLAGS_R := $(CFLAGS_R:-Ospace=-Os)
+
+# Slove sub-folder cannot include parent folder header file
+INC_DIR += -I$(CURDIR)
+
+# For Debug target
+CFLAGS_D    += -g -ggdb -O0 $(PLATFORM_CFLAGS)
+ASMFLAGS_D  += -g $(PLATFORM_AFLAGS)
+
+# For Release target, for loader flags, use -Os instead of -O2 for loader size
+CFLAGS_R    += -O2 $(PLATFORM_CFLAGS)
+ASMFLAGS_R  += $(PLATFORM_AFLAGS)
+
+# Generate debug symbol in release target
+ifeq "$(RELEASE_SYMBOL)" "ON"
+    CFLAGS_R    += -g -ggdb
+    ASMFLAGS_R  += -L -g
+endif
+
+# Generate debug callback of entry and exit to functions
+ifeq "$(INSTRUMENT_FUNCTION)" "ON"
+    CFLAGS_R += -finstrument-functions -finstrument-functions-exclude-file-list=Common_src/LibC,Common_src/Kernel,Common_src/Debug,Common_src/OS,Include/Common/LibC,Include/Common/Kernel,Include/Common/Debug,Include/Common/OS,Drv_src/Driver,Include/Drv/Driver
+    CFLAGS_D += -finstrument-functions -finstrument-functions-exclude-file-list=Common_src/LibC,Common_src/Kernel,Common_src/Debug,Common_src/OS,Include/Common/LibC,Include/Common/Kernel,Include/Common/Debug,Include/Common/OS,Drv_src/Driver,Include/Drv/Driver
+    CFLAGS_R += -D_INSTRUMENT_FUNCTION_=1
+    CFLAGS_D += -D_INSTRUMENT_FUNCTION_=1
+else
+    CFLAGS_R += -D_INSTRUMENT_FUNCTION_=0
+    CFLAGS_D += -D_INSTRUMENT_FUNCTION_=0
+endif
+
+#----------------------------------------------------------------------
+# Generate one ELF section for each function
+# Only apply to release target
+#----------------------------------------------------------------------
+ifeq "$(SECTION_BY_FUNC)" "ON"
+# for loader codes, '-fdata-sections' needs removing for loader code size
+    CFLAGS_R += -ffunction-sections -fdata-sections
+    CFLAGS_D += -ffunction-sections -fdata-sections
+endif
+
+#----------------------------------------------------------------------
+# Definition for source code check build debug or release
+#----------------------------------------------------------------------
+CFLAGS_R += -DNDEBUG
+CFLAGS_D += -D_DEBUG
+
+#----------------------------------------------------------------------
+# FPGA notification for drivers
+#----------------------------------------------------------------------
+ifeq "$(EMULATION)" "ON"
+    ifeq "$(FPGA_EMULATION)" "ON"
+        CFLAGS_R += -D_EMULATION_=1 -D_FPGA_EMULATION_=1 -D_FPGA_PLL_OSC_=$(FPGA_PLL_OSC)
+        CFLAGS_D += -D_EMULATION_=1 -D_FPGA_EMULATION_=1 -D_FPGA_PLL_OSC_=$(FPGA_PLL_OSC)
+        GCCFLAGS += -D_EMULATION_=1 -D_FPGA_EMULATION_=1 -D_FPGA_PLL_OSC_=$(FPGA_PLL_OSC)
+    else
+        CFLAGS_R += -D_EMULATION_=1 -D_FPGA_EMULATION_=0
+        CFLAGS_D += -D_EMULATION_=1 -D_FPGA_EMULATION_=0
+        GCCFLAGS += -D_EMULATION_=1 -D_FPGA_EMULATION_=0
+    endif
+else
+    CFLAGS_R += -D_EMULATION_=0 -D_FPGA_EMULATION_=0
+    CFLAGS_D += -D_EMULATION_=0 -D_FPGA_EMULATION_=0
+    GCCFLAGS += -D_EMULATION_=0 -D_FPGA_EMULATION_=0
+endif
+
+#----------------------------------------------------------------------
+# PM demo based on customized building way
+#----------------------------------------------------------------------
+ifeq "$(PM_DEMO)" "ON"
+    CFLAGS_R += -D_PM_DEMO_=1
+    CFLAGS_D += -D_PM_DEMO_=1
+else
+    CFLAGS_R += -D_PM_DEMO_=0
+    CFLAGS_D += -D_PM_DEMO_=0
+endif
+
+#----------------------------------------------------------------------
+# GIC usage ON/OFF
+#----------------------------------------------------------------------
+ifeq "$(ARM_GIC_400)" "ON"
+    CFLAGS_R 	+= -D_ARM_GIC_USAGE_=1
+    CFLAGS_D 	+= -D_ARM_GIC_USAGE_=1
+	ASMFLAGS_R	+= -D_ARM_GIC_USAGE_=1
+	ASMFLAGS_D	+= -D_ARM_GIC_USAGE_=1
+else
+    CFLAGS_R 	+= -D_ARM_GIC_USAGE_=0
+    CFLAGS_D 	+= -D_ARM_GIC_USAGE_=0
+	ASMFLAGS_R	+= -D_ARM_GIC_USAGE_=0
+	ASMFLAGS_D	+= -D_ARM_GIC_USAGE_=0
+endif
+
+#----------------------------------------------------------------------
+# Architecture definition
+#----------------------------------------------------------------------
+CFLAGS_R += -D_ARCH_ARM_=0 -D_ARCH_MIPS_=1
+CFLAGS_D += -D_ARCH_ARM_=0 -D_ARCH_MIPS_=1
+GCCFLAGS += -D_ARCH_ARM_=0 -D_ARCH_MIPS_=1
+
+ifeq "$(ARCH)" "ARM"
+    CFLAGS_R += -D_ARCH_=_ARCH_ARM_
+    CFLAGS_D += -D_ARCH_=_ARCH_ARM_
+    GCCFLAGS += -D_ARCH_=_ARCH_ARM_
+else ifeq "$(ARCH)" "MIPS"
+    CFLAGS_R += -D_ARCH_=_ARCH_MIPS_
+    CFLAGS_D += -D_ARCH_=_ARCH_MIPS_
+    GCCFLAGS += -D_ARCH_=_ARCH_MIPS_
+endif
+
+ifeq "$(FPU)" "hard"
+ASMFLAGS_D  += -D_NEON_ON_=1
+ASMFLAGS_R  += -D_NEON_ON_=1
+else
+ASMFLAGS_D  += -D_NEON_ON_=1
+ASMFLAGS_R  += -D_NEON_ON_=1
+endif
+
+#----------------------------------------------------------------------
+# Definition from environment
+#----------------------------------------------------------------------
+ifeq "$(NMAKE_DEF)" ""
+CFLAGS_R += -D_EMULATION_ON_CPU2_=0 -D_EMULATION_MULTI_CPU_=0
+CFLAGS_D += -D_EMULATION_ON_CPU2_=0 -D_EMULATION_MULTI_CPU_=0
+else
+CFLAGS_R += $(NMAKE_DEF)
+CFLAGS_D += $(NMAKE_DEF)
+endif
+ifeq "$(NMAKE_DEF_ASM)" ""
+ASMFLAGS_R += -D_EMULATION_ON_CPU2_=0 -D_EMULATION_MULTI_CPU_=0
+ASMFLAGS_D += -D_EMULATION_ON_CPU2_=0 -D_EMULATION_MULTI_CPU_=0
+else
+ASMFLAGS_R += $(NMAKE_DEF_ASM)
+ASMFLAGS_D += $(NMAKE_DEF_ASM)
+endif
+#----------------------------------------------------------------------
+# Set image base directory according to kernel type
+# eCos      : /ARC
+# uITRON    : /ARC_eCos
+#----------------------------------------------------------------------
+ifeq "$(USE_ECOS_KERNEL)" "ON"
+    ifeq "$(OUTPUT_FILE)" "LIB"
+        # This is for library, project's image base directory is $(PRJ_NAME)_Data
+        # IMG_BASE_DIR looks like ../../ARC/Common (There is backslash succeeding to /ARC)
+		ifneq "$(ALG_PATH)" ""
+		IMG_BASE_DIR := $(subst ../../ARC,../../ARC_eCos,$(IMG_BASE_DIR))
+		else
+        IMG_BASE_DIR := $(subst /ARC/,/ARC_eCos/,$(IMG_BASE_DIR))
+		endif
+    endif
+    ifeq "$(OUTPUT_FILE)" "BIN"
+        # This is for project, library doesn't have this variable
+        # ARC_BASE_DIR looks like ../../ARC (There is No backslash succeeding to /ARC)
+        ARC_BASE_DIR := $(subst /ARC,/ARC_eCos,$(ARC_BASE_DIR))
+    endif
+    KERNEL_STR := eCos
+else
+    KERNEL_STR := uITRON
+endif
+
+#----------------------------------------------------------------------
+# Set branched project name
+#----------------------------------------------------------------------
+ifneq "$(_BRANCH_PROJECT_)" ""
+    CFLAGS_R += -D_PROJECT_CODE_=$(_BRANCH_PROJECT_)
+    CFLAGS_D += -D_PROJECT_CODE_=$(_BRANCH_PROJECT_)
+endif
+
+#----------------------------------------------------------------------
+# Set the directory for debug/release objects and images here
+#----------------------------------------------------------------------
+OBJ_DEBUG   = $(PRJ_NAME)_Data/Debug/ObjectCode
+OBJ_RELEASE = $(PRJ_NAME)_Data/Release/ObjectCode
+IMG_DEBUG   = $(IMG_BASE_DIR)/Debug
+IMG_RELEASE = $(IMG_BASE_DIR)/Release
+
+
+#----------------------------------------------------------------------
+# Filter the GCC Command Options for debug/release mode
+#----------------------------------------------------------------------
+FILTER_GCC_D = $(foreach v, $(filter-out $(MODELCONFIG_STR_CFLAGS),$(CFLAGS_D)), $(if $(findstring -D, $(v)), , $(v)))
+GCC_OPT_D    = $(filter-out $(INC_DIR), $(FILTER_GCC_D))
+FILTER_GCC_R = $(foreach v, $(filter-out $(MODELCONFIG_STR_CFLAGS),$(CFLAGS_R)), $(if $(findstring -D, $(v)), , $(v)))
+GCC_OPT_R    = $(filter-out $(INC_DIR), $(FILTER_GCC_R))
+
+
+#----------------------------------------------------------------------
+# Set the make outputs
+#----------------------------------------------------------------------
+SRC_OBJ_D := $(addprefix $(OBJ_DEBUG)/, $(notdir $(SRC:.c=.o)))
+ASM_OBJ_D := $(addprefix $(OBJ_DEBUG)/, $(notdir $(ASM:.S=.o)))
+CPP_OBJ_D := $(addprefix $(OBJ_DEBUG)/, $(notdir $(CPP_SRC:.cpp=.o)))
+ALL_OBJ_D := $(ASM_OBJ_D) $(SRC_OBJ_D) $(CPP_OBJ_D)
+DEPFILE_D := $(subst .o,.d,$(ALL_OBJ_D))
+
+SRC_OBJ_R := $(addprefix $(OBJ_RELEASE)/, $(notdir $(SRC:.c=.o)))
+ASM_OBJ_R := $(addprefix $(OBJ_RELEASE)/, $(notdir $(ASM:.S=.o)))
+CPP_OBJ_R := $(addprefix $(OBJ_RELEASE)/, $(notdir $(CPP_SRC:.cpp=.o)))
+ALL_OBJ_R := $(ASM_OBJ_R) $(SRC_OBJ_R) $(CPP_OBJ_R)
+DEPFILE_R := $(subst .o,.d,$(ALL_OBJ_R))
+
+ifeq "$(ISOLATE_DEP)" "ON"
+    ALL_DEP := $(DEPFILE_D) $(DEPFILE_R)
+endif
+
+LINT_ROOTDIR    = $(PRJ_NAME)_Lint
+LINT_DIR        = $(PRJ_NAME)_Lint/LintData
+LINT_FILE      := $(addprefix $(LINT_DIR)/, $(notdir $(SRC:.c=.lob)))
+
+#----------------------------------------------------------------------
+# For dependency, here no need $(INC_DIR) because of C_INCLUDE_PATH
+#----------------------------------------------------------------------
+GCCFLAGS += -c -w
+
+#----------------------------------------------------------------------
+# For coding rule
+#----------------------------------------------------------------------
+PCLINTFLAGS = $(PCLINT_PARAMETER) $(C_DEFINE_EXT) $(INC_DIR) -i$(MAKE_COMMON_DIR)/LintRule std.lnt options.lnt $$(lintopt_file)
+
+#----------------------------------------------------------------------
+# define host environment is linux if we build on linux server
+#----------------------------------------------------------------------
+ifeq ($(OS),Linux)
+CFLAGS_R += -D_HOST_ENV_LINUX_
+CFLAGS_D += -D_HOST_ENV_LINUX_
+GCCFLAGS += -D_HOST_ENV_LINUX_
+endif
+
+#----------------------------------------------------------------------
+# CPP FLAGS derived from CFLAGS_R / CFLAGS_D
+#----------------------------------------------------------------------
+CPPFLAGS_R = $(filter-out -Wstrict-prototypes -Wimplicit-function-declaration -Wmissing-prototypes, $(CFLAGS_R))
+CPPFLAGS_D = $(filter-out -Wstrict-prototypes -Wimplicit-function-declaration -Wmissing-prototypes, $(CFLAGS_D))
+
+#----------------------------------------------------------------------
+# Set the make targets
+#----------------------------------------------------------------------
+build_all: rm_log build_D build_R
+
+make_debug_begin:
+	@-echo \
+	&& echo Checking $(KERNEL_STR) - $(basename $(notdir $(IMAGE_D))) debug target ... \
+	&& mkdir -p $(IMG_DEBUG) $(OBJ_DEBUG)
+
+make_release_begin:
+	@-echo \
+	&& echo Checking $(KERNEL_STR) - $(basename $(notdir $(IMAGE_R))) release target ... \
+	&& mkdir -p $(IMG_RELEASE) $(OBJ_RELEASE)
+
+make_dep_begin:
+	@-echo Checking $(basename $(notdir $(IMAGE_R))) dependency ... \
+	&& mkdir -p $(OBJ_DEBUG) $(OBJ_RELEASE)
+
+make_lint_begin:
+	@-echo Checking \"$(basename $(notdir $(IMAGE_R)))\" with coding rules  ... \
+	&& mkdir -p $(LINT_DIR)
+
+make_option_begin:
+	@-echo [GCC Command Options - Release]
+	@-echo $(GCC_OPT_R)
+	@-echo
+	@-echo [GCC Command Options - Debug  ]
+	@-echo $(GCC_OPT_D)
+
+#----------------------------------------------------------------------
+# Compile rule functions
+#----------------------------------------------------------------------
+# use C_INCLUDE_PATH instead of $(INC_DIR) while compiling C file to avoid that argument too large
+# $(subst ,, ) presents a space character
+# $(subst [space]-I,: change -I to ':' or ';' to fit GCC C_INCLUDE_PATH spec (for all item but first)
+# $(subst -I,: hange -I to ':' or ';' to fit GCC C_INCLUDE_PATH spec (for first item)
+# $foreach to express item array into one dimension
+ifeq ($(OS),Linux)
+export C_INCLUDE_PATH=$(foreach n,$(subst -I,,$(subst $(subst ,, )-I,:,$(INC_DIR))),$(n))
+export CPLUS_INCLUDE_PATH=$(foreach n,$(subst -I,,$(subst $(subst ,, )-I,:,$(INC_DIR))),$(n))
+else
+export C_INCLUDE_PATH=$(foreach n,$(subst -I,,$(subst $(subst ,, )-I,;,$(INC_DIR))),$(n))
+export CPLUS_INCLUDE_PATH=$(foreach n,$(subst -I,,$(subst $(subst ,, )-I,;,$(INC_DIR))),$(n))
+endif
+BUILD_DATE = 20`date +'%y%m%d'`
+ifeq "$(ISOLATE_DEP)" "ON"
+
+    # $(call compile_rule,object,source,cflags)
+    define compile_rule
+    $1: $2
+		@echo Compiling $(notdir $2)\
+		&& $(CC) -D__section_name__=$(PRJ_NAME) -D__module_name__=$(PRJ_NAME)_LIBRARY_VERSION_INFO -D__SHORT_FILE__=$(basename $(notdir $2)) -D_BUILD_DATE_=$(BUILD_DATE) $3 -o $1 $2 $$(LOG_OPTION)
+
+    endef
+
+    # $(call compile_rule_asm,object,source,asmflags)
+    define compile_rule_asm
+    $1: $2
+		@echo Compiling $(notdir $2) \
+		&& $(CC) $(PLATFORM_AFLAGS) -c $3 -o $1 $2 $$(LOG_OPTION)
+
+    endef
+
+    # $(call compile_rule_cpp,object,source,cflags)
+    define compile_rule_cpp
+    $1: $2
+		@echo Compiling $(notdir $2) \
+		&& $(CXX) -D__section_name__=$(PRJ_NAME) -D__module_name__=$(PRJ_NAME)_LIBRARY_VERSION_INFO -D__SHORT_FILE__=$(basename $(notdir $2)) -D_BUILD_DATE_=$(BUILD_DATE) $3 -o $1 $2 $$(LOG_OPTION)
+
+    endef
+
+else
+
+    # $(call compile_rule,object,source,cflags)
+    define compile_rule
+    $1: $2
+		@-$(GCC) -MM -MF $(basename $1).d -MP -MT $1 $(GCCFLAGS) $2 \
+		&& echo Compiling $(notdir $2)
+		@$(CC) -D__section_name__=$(PRJ_NAME) -D__module_name__=$(PRJ_NAME)_LIBRARY_VERSION_INFO -D__SHORT_FILE__=$(basename $(notdir $2)) -D_BUILD_DATE_=$(BUILD_DATE) $3 -o $1 $2 $$(LOG_OPTION)
+
+    endef
+
+    # $(call compile_rule_asm,object,source,asmflags)
+    define compile_rule_asm
+    $1: $2
+		@-$(GCC) -MM -MF $(basename $1).d -MP -MT $1 $(GCCFLAGS) $2 \
+		&& echo Compiling $(notdir $2)
+		@$(CC) -D__section_name__=$(PRJ_NAME) -D__module_name__=$(PRJ_NAME)_LIBRARY_VERSION_INFO -D__SHORT_FILE__=$(basename $(notdir $2)) -D_BUILD_DATE_=$(BUILD_DATE)  $3 -o $1 $2 $$(LOG_OPTION)
+
+    endef
+
+    # $(call compile_cpp,object,source,cflags)
+    define compile_rule_cpp
+    $1: $2
+		@-$(CXX) -MM -MF $(basename $1).d -MP -MT $1 $(GCCFLAGS) $2 \
+		&& echo Compiling $(notdir $2)
+		@$(CXX) -D__section_name__=$(PRJ_NAME) -D__module_name__=$(PRJ_NAME)_LIBRARY_VERSION_INFO -D__SHORT_FILE__=$(basename $(notdir $2)) -D_BUILD_DATE_=$(BUILD_DATE) $3 -o $1 $2 $$(LOG_OPTION)
+
+    endef
+
+endif
+
+# $(call get_obj,obj_dir,source)
+get_obj = $(addprefix $1/, $(subst .c,.o,$(notdir $2)))
+
+# $(call get_obj_asm,obj_dir,source)
+get_obj_asm = $(addprefix $1/, $(subst .S,.o,$(notdir $2)))
+
+# $(call get_obj,obj_dir,source)
+get_obj_cpp = $(addprefix $1/, $(subst .cpp,.o,$(notdir $2)))
+
+# $(call compile_all,obj_dir,cflags)
+define compile_all
+$(foreach i, $(SRC), \
+	$(call compile_rule,$(call get_obj,$1,$i),$i,$2))
+endef
+
+# $(call compile_all_asm,obj_dir,asmflags)
+define compile_all_asm
+$(foreach i, $(ASM), \
+	$(call compile_rule_asm,$(call get_obj_asm,$1,$i),$i,$2))
+endef
+
+# $(call compile_all_cpp,obj_dir,cflags)
+define compile_all_cpp
+$(foreach i, $(CPP_SRC), \
+	$(call compile_rule_cpp,$(call get_obj_cpp,$1,$i),$i,$2))
+endef
+
+#-----------------------------------------------------------------
+# Dependency rule functions
+#-----------------------------------------------------------------
+# $(call depend_rule,depend,source)
+define depend_rule
+$1: $2
+	@echo Depending $(notdir $2) \
+	&& $(GCC) -MM -MF $1 -MP -MT $(basename $1).o $(GCCFLAGS) $2 \
+	&& sed -e 's/_Data\/Debug\//_Data\/Release\//1' $1 > $(subst _Data/Debug/,_Data/Release/,$1)
+
+endef
+
+define depend_rule_asm
+$1: $2
+	@echo Depending $(notdir $2) \
+	&& $(GCC) -MM -MF $(basename $1).d -MP -MT $1 $(GCCFLAGS) $2 \
+	&& sed -e 's/_Data\/Debug\//_Data\/Release\//1' $1 > $(subst _Data/Debug/,_Data/Release/,$1) \
+	&& rm -f $(basename $1).o
+
+endef
+
+define depend_rule_cpp
+$1: $2
+	@echo Depending $(notdir $2) \
+	&& $(CXX) -MM -MF $1 -MP -MT $(basename $1).o $(GCCFLAGS) $2\
+	&& sed -e 's/_Data\/Debug\//_Data\/Release\//1' $1 > $(subst _Data/Debug/,_Data/Release/,$1)
+
+endef
+
+# $(call get_dep,dep_dir,source)
+get_dep = $(addprefix $1/, $(subst .c,.d,$(notdir $2)))
+
+# $(call get_dep_asm,dep_dir,source)
+get_dep_asm = $(addprefix $1/, $(subst .S,.d,$(notdir $2)))
+
+# $(call get_dep_cpp,dep_dir,source)
+get_dep_cpp = $(addprefix $1/, $(subst .cpp,.d,$(notdir $2)))
+
+define depend_all
+$(foreach i, $(SRC), \
+	$(call depend_rule,$(call get_dep,$1,$i),$i))
+endef
+
+# $(call dep_all_asm,dep_dir)
+define depend_all_asm
+$(foreach i, $(ASM), \
+	$(call depend_rule_asm,$(call get_dep_asm,$1,$i),$i))
+endef
+
+define depend_all_cpp
+$(foreach i, $(CPP_SRC), \
+	$(call depend_rule_cpp,$(call get_dep_cpp,$1,$i),$i))
+endef
+
+#----------------------------------------------------------------------
+# LINT rule functions
+#----------------------------------------------------------------------
+# $(call get_lint,lint_dir,source)
+get_lint = $(addprefix $1/, $(subst .c,.lob,$(notdir $2)))
+
+# $(call lint_rule,output,source)
+define lint_rule
+$1: $2
+	@-echo Review $(notdir $2) \
+	&& $(LT) $(PCLINTFLAGS) -u -zero -oo[$1] $2 >> $$(lint_file)
+
+endef
+
+#	&& $(LT) $(PCLINTFLAGS) $2 >> $$(lint_file)
+
+define lint_all
+$1:
+$(foreach i, $(SRC), \
+	$(call lint_rule,$(call get_lint,$1,$i),$i))
+	@-echo Review \(Internal Relation\) \
+	&& $(LT) $(PCLINTFLAGS) $(LINT_DIR)/"*.lob" >> $$(lint_file)
+	-rm -rf --no-preserve-root $(LINT_ROOTDIR)
+
+endef
+
+#----------------------------------------------------------------------
+# Goals
+#----------------------------------------------------------------------
+ifeq "$(ISOLATE_DEP)" "ON"
+
+    ifeq "$(MAKECMDGOALS)" "dep"
+        $(eval $(call depend_all,$(OBJ_RELEASE)))
+        $(eval $(call depend_all_asm,$(OBJ_RELEASE)))
+        $(eval $(call depend_all_cpp,$(OBJ_RELEASE)))
+        $(eval $(call depend_all,$(OBJ_DEBUG)))
+        $(eval $(call depend_all_asm,$(OBJ_DEBUG)))
+        $(eval $(call depend_all_cpp,$(OBJ_DEBUG)))
+    endif
+
+    ifeq "$(MAKECMDGOALS)" ""
+        .DEFAULT_GOAL := all
+    endif
+
+else
+
+    ifeq "$(MAKECMDGOALS)" ""
+        -include $(DEPFILE_D)
+        -include $(DEPFILE_R)
+        $(eval $(call compile_all,$(OBJ_DEBUG),$(CFLAGS_D)))
+        $(eval $(call compile_all,$(OBJ_RELEASE),$(CFLAGS_R)))
+        $(eval $(call compile_all_asm,$(OBJ_DEBUG),$(ASMFLAGS_D)))
+        $(eval $(call compile_all_asm,$(OBJ_RELEASE),$(ASMFLAGS_R)))
+        $(eval $(call compile_all_cpp,$(OBJ_DEBUG),$(CPPFLAGS_D)))
+        $(eval $(call compile_all_cpp,$(OBJ_RELEASE),$(CPPFLAGS_R)))
+    endif
+
+    ifeq "$(MAKECMDGOALS)" "rebuild"
+        -include $(DEPFILE_D)
+        -include $(DEPFILE_R)
+        $(eval $(call compile_all,$(OBJ_DEBUG),$(CFLAGS_D)))
+        $(eval $(call compile_all,$(OBJ_RELEASE),$(CFLAGS_R)))
+        $(eval $(call compile_all_asm,$(OBJ_DEBUG),$(ASMFLAGS_D)))
+        $(eval $(call compile_all_asm,$(OBJ_RELEASE),$(ASMFLAGS_R)))
+        $(eval $(call compile_all_cpp,$(OBJ_DEBUG),$(CPPFLAGS_D)))
+        $(eval $(call compile_all_cpp,$(OBJ_RELEASE),$(CPPFLAGS_R)))
+    endif
+
+endif
+
+ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),debug build_pipe_D))
+    -include $(DEPFILE_D)
+    $(eval $(call compile_all,$(OBJ_DEBUG),$(CFLAGS_D)))
+    $(eval $(call compile_all_asm,$(OBJ_DEBUG),$(ASMFLAGS_D)))
+    $(eval $(call compile_all_cpp,$(OBJ_DEBUG),$(CPPFLAGS_D)))
+endif
+
+ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),release build_pipe_R))
+    -include $(DEPFILE_R)
+    $(eval $(call compile_all,$(OBJ_RELEASE),$(CFLAGS_R)))
+    $(eval $(call compile_all_asm,$(OBJ_RELEASE),$(ASMFLAGS_R)))
+    $(eval $(call compile_all_cpp,$(OBJ_RELEASE),$(CPPFLAGS_R)))
+endif
+
+ifeq "$(MAKECMDGOALS)" "lint"
+    $(eval $(call lint_all,$(LINT_DIR)))
+endif

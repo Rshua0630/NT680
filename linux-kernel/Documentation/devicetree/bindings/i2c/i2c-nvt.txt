@@ -1,0 +1,11 @@
+i2c Controller on nvt platform:
+
+Required properties:
+- compatible : "nvt,nt726xx_i2c.0";
+- compatible : "nvt,nt726xx_i2c.1";
+- compatible : "nvt,nt726xx_i2c.2";
+- compatible : "nvt,nt726xx_i2c.3";
+- compatible : "nvt,nt726xx_i2c.4";
+- compatible : "nvt,nt726xx_i2c.5";
+- compatible : "nvt,nt726xx_i2c.6";
+- compatible : "nvt,nt726xx_i2c.7";

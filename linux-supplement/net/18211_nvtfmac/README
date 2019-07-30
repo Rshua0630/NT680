@@ -1,0 +1,10 @@
+[Install Driver]
+Execute the following command:
+        ./modgen.pl ins
+
+[Uninstall Driver]
+Execute the following command:
+        ./modgen.pl unins
+        
+Note that you may be asked to enter password because of running commands as
+the super user.

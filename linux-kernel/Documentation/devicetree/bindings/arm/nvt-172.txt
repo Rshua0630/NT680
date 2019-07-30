@@ -1,0 +1,11 @@
+
+Novatek 172 processor define
+-----------------------------------------------------
+This binding defines the location of the bounce buffer
+used for non-secure to secure communications.
+
+Required properties:
+- compatible : "novatek,nt72172", "nvt,ca53";
+- reg :        register space
+
+

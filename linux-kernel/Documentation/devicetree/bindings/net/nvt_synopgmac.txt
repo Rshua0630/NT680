@@ -1,0 +1,19 @@
+* novatek synopGMAC and NVT Internal Phy
+
+Required properties:
+- compatible: "nvt,synopsys-mac".
+- reg: address and length of the register set for the device.
+- interrupts: interrupt for the device
+
+Example:
+ethernet@fd160000 {
+	compatible = "nvt,synopsys-mac";
+	//MAC & DMA & GPIO mux & Clock pad-in mux & Clock control
+	reg = <0xfd160000 0x0ffc>,
+		  <0xfd161000 0x0054>,
+		  <0xfd100400 0x4>,
+		  <0xfc040bf0 0x4>,
+		  <0xfc040bf4 0x4>;
+	interrupts = <0 42 4>;
+};
+

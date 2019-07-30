@@ -1,0 +1,36 @@
+===================================================================================
+
+Release Version:	r1.00.016
+
+Author:			Mark CS
+
+Date:			2018/3/14
+
+Driver SVN version:	SVN#6359
+
+
+[Driver]
+    1.remove insert module param "fw"
+    2.Support remote debug
+    3.support driver/firmware offload 4way
+    4.add macro for vendor command suuport
+    5.check fw capability after fw download
+
+===================================================================================
+
+Release Version:	r1.00.015
+
+Author:			Mark CS
+
+Date:			2018/1/17
+
+Driver SVN version:	SVN#5812
+
+[Driver]
+    1.default set streaming mode WID
+    2.fix getwid lock bug
+    3.define the MICROSOFT_OUT under Kernel version 3.6
+    4.remove nvtfmac_usb_init
+
+===================================================================================
+

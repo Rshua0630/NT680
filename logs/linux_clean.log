@@ -1,0 +1,23 @@
+make[1]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/linux-kernel'
+make[2]: Entering directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/linux-kernel/OUTPUT'
+  CLEAN   .
+  CLEAN   arch/arm/kernel
+  CLEAN   arch/arm/vdso
+  CLEAN   lib
+  CLEAN   kernel/time
+  CLEAN   usr
+  CLEAN   arch/arm/boot/compressed
+  CLEAN   arch/arm/boot/dts
+  CLEAN   arch/arm/boot
+  CLEAN   scripts/basic
+  CLEAN   scripts/dtc
+  CLEAN   scripts/genksyms
+  CLEAN   scripts/kconfig
+  CLEAN   scripts/mod
+  CLEAN   scripts
+  CLEAN   drivers/tty/vt
+  CLEAN   .tmp_versions
+  CLEAN   include/config include/generated arch/arm/include/generated
+  CLEAN   .config .version Module.symvers
+make[2]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/linux-kernel/OUTPUT'
+make[1]: Leaving directory `/home/nvt01041/na51000_bsp/NT96680_BSP_20180823_TK/NA51000_BSP/linux-kernel'

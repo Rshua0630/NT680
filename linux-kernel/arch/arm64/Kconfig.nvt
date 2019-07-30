@@ -1,0 +1,18 @@
+#we put NVT related arch config here
+#menuconfig NVT
+if ARCH_NVT_V8
+config ARCH_NVT72172
+	bool "Novatek NVT72172"
+        ---help---
+	  This config is use to enable 172 related features
+	  Driver owner can use it for 172 IPs flow determination
+
+	  default it will be selected by ARCH_NVT_V8
+	  and will be select for NT72172 plaotform
+
+config ARCH_NVT_FPGA
+	bool "ARMv8 novatek fpga platform"
+	help
+	  This enables support for the ARMv8 on novatek platform
+endif # NVT
+

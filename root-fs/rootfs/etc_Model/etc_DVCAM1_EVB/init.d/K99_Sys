@@ -1,0 +1,17 @@
+#!/bin/sh
+
+echo "K99 Wait /tmp/nvtapp_poweroffack ready"
+x=0
+timeout=100
+while [ "$x" -lt "$timeout" -a ! -e /tmp/nvtapp_poweroffack ]; do
+        x=$((x+1))
+        #echo $x
+        sleep .1
+done
+if [ "$x" -ge "$timeout" ]; then
+   echo "ERR:app power off timeout" 
+fi
+#ls -al /tmp/
+umount /mnt/sd
+echo "K99 power off end"
+

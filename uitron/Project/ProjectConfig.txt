@@ -1,0 +1,5 @@
+# [ACTIVE_PROJECT]
+# DemoKit
+# TestKit
+# EmuKit
+ACTIVE_PROJECT = DemoKit

@@ -1,0 +1,6 @@
+proc		/proc			proc	defaults	0	0
+sysfs		/sys			sysfs	defaults	0	0
+tmpfs		/dev			tmpfs	defaults	0	0
+tmpfs           /tmp                    tmpfs   defaults,noatime,nosuid,nodev,noexec,mode=1777,size=5M 0 0
+tmpfs		/var/run		tmpfs	defaults,rw,nosuid,mode=0755	0	0
+debugfs		/sys/kernel/debug	debugfs	defaults	0	0

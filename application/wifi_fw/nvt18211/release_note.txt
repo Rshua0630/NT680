@@ -1,0 +1,64 @@
+SVN#6549 - release.nt-18211.7z
+
+Release Note:
+[Common]
+Merged revision(s) 6527 from NT18211/Firmware/branches/B_VIA_IP-Cam20180312:
+[AT] comment out the debug code in wowlan.c
+    * comment out the debug message for pattern frame issue
+[TC] Add the optional config for STA with the PTK offload.
+
+[STA]
+N/A
+
+[AP]
+N/A
+
+[HUT]
+N/A
+
+--------------------------------------------------------------------------------
+
+SVN#5879 - release.nt-18211.7z
+
+Release Note:
+[Common]
+[JerryKo] disable hw duplicate detection for rx lost frames issue
+[Wade]1.rate6 and rate7 is minimum rate in retry rate table 2.Lowest PHY rate at 5.5M
+[AT] feat(AR): merge AR branch changes to trunk
+[Wade]fixed wrap arround
+[Wade]1.chage BIT16 to DEBUG_LEVEL 2.follow g_data_mode rule
+[AT] fix(AR): remove doing frame_retry_count in mpdu case
+[AT] merge(B_AR_ALGO): Add Wade fixes in trunk
+[KD]
+1.separate wow and deep_sleep io_cfg table
+2.support GPO_don't_care for LED indicator on MA-8801 request (GPIO-3)
+[TC] FW can support any number of IO tables from HOST
+[Wade]merge AR_branch 5856
+[KD]
+1. add temperature sensor trimming value in eFuse (Byte offset 0x36)
+2. add mcuadc code mapping to real temperature formula for RF re-cal
+[Aric]
+1. Add re-calibration function (RF_Temp_Recal() in tc18222.c) and decision API (temp_dec.c) for temperature variations.
+2. Add tx power adjustment API (TX_PWR_ADJ() in tc18222.c).
+3. HT20/40 MCS7 tx power will refer to efuse tssi[6][7] if not empty.
+4. Adjust BW filter coefficient (HT20/40 RX filter).
+[Aric]
+1. update temperature decision algorithm
+[KD]
+1. support TX_Power_Select
+
+[STA]
+[AT] fix(RetryLimit): Retry limit not correct for STAUT
+[KD] fix mantis#0122575, wakeup fail for DeepSleep (root cause: PHY not Power-ON after wakeup from DeepSleep cause RF_Cali fail)
+[TC] support WoW store into device
+[AT] feat(WoWLAN): Separate resume code for trigger frame resume
+[AT] fix(WoWLAN): Only flush SWBRG when ap recover has happened
+[Chih-Hsiang]
+1. Fix code risk(free dscr before using dscr) in process_tx_comp_sta().
+
+[AP]
+
+
+[HUT]
+[KD] fix 1st ¡§hut 0 20¡¨.may not work, die to sx not locked
+[KD] HUT-FW: fix hut-rx 40 cause next hut-tx fail (mode pin not correct @ht-40 Rx test)

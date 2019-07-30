@@ -1,0 +1,1198 @@
+#----------------------------------------------------------------------
+# Local variable to determine create library or binary file
+#----------------------------------------------------------------------
+OUTPUT_FILE = BIN
+
+#----------------------------------------------------------------------
+# include make common and make option files
+#----------------------------------------------------------------------
+include $(MAKE_COMMON_DIR)/MakeOption.txt
+include $(MAKE_COMMON_DIR)/MakeCommon.txt
+
+#----------------------------------------------------------------------
+# CHIPCFG parameters
+#----------------------------------------------------------------------
+ifeq "$(CHIPCFG)" ""
+  CHIPCFG := CHIPCFG
+endif
+
+#----------------------------------------------------------------------
+# get force link ThirdParty symbols for both debug and release
+#----------------------------------------------------------------------
+SYMBOL_NETWORK := ""
+ifeq "$(USE_ECOS_KERNEL)" "ON"
+rwildcard = $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
+
+LIB_ECOS_BASE_DIR = $(ROOT_DIR)/ThirdParty
+LIB_ECOS = $(call rwildcard,$(LIB_ECOS_BASE_DIR)/,*.a)
+
+#Remove all network releated driver then add what you want
+LIB_ECOS_NET_ALL += ecos-nvtwifi
+LIB_ECOS_NET_ALL += devs_eCos-rtl ecos-rtkwifi rtkcmd rtkwps
+LIB_ECOS_NET_ALL += devs_eCos-brcm ecos-brcmwifi devs_eCos-brcmdhd brcmcmd brcmwps devs_eCos-brcmes
+LIB_ECOS_NET_ALL += ecos-ntkwifi ntkwpa ntkcmd ntkes
+LIB_ECOS_FILTER_OUT = $(addsuffix %,$(addprefix ../../ThirdParty/, $(LIB_ECOS_NET_ALL)))
+LIB_ECOS := $(filter-out $(LIB_ECOS_FILTER_OUT), $(LIB_ECOS))
+
+ifeq "$(NVT_SDIO_WIFI)" "NVT_SDIO_WIFI_BRCM"
+WIFIBRCMMDL = $(shell echo $(WIFI_BRCM_MDL) | sed 's/WIFI_BRCM_MDL_//g' | sed 's/_/+/g')
+LIB_ECOS_SELECT_WIFI_DIR = devs_eCos-brcm$(WIFIBRCMMDL)
+LIB_ECOS_MUST_WIFI_DIR = ecos-nvtwifi devs_eCos-brcmdhd brcmcmd brcmwps ecos-brcmwifi devs_eCos-brcmes
+else ifeq "$(NVT_SDIO_WIFI)" "NVT_SDIO_WIFI_RTK"
+WIFIRTKMDL = $(shell echo $(WIFI_RTK_MDL) | sed 's/WIFI_RTK_MDL_//g')
+LIB_ECOS_SELECT_WIFI_DIR = devs_eCos-rtl$(WIFIRTKMDL)es
+LIB_ECOS_MUST_WIFI_DIR = ecos-nvtwifi ecos-rtkwifi rtkcmd rtkwps
+else ifeq "$(NVT_SDIO_WIFI)" "NVT_SDIO_WIFI_NVT"
+WIFINVTMDL = $(shell echo $(WIFI_NVT_MDL) | sed 's/WIFI_NVT_MDL_//g')
+LIB_ECOS_SELECT_WIFI_DIR = devs_eCos-nt$(WIFINVTMDL)
+LIB_ECOS_MUST_WIFI_DIR = ntkwpa ntkcmd ntkes ecos-nvtwifi ecos-ntkwifi
+endif
+
+ifneq "$(LIB_ECOS_SELECT_WIFI_DIR)" ""
+LIB_ECOS_SELECT_WIFI_LIB = $(call rwildcard,$(LIB_ECOS_BASE_DIR)/$(LIB_ECOS_SELECT_WIFI_DIR)/,*.a)
+endif
+ifneq "$(LIB_ECOS_MUST_WIFI_DIR)" ""
+LIB_ECOS_MUST_WIFI_LIB = $(foreach d,$(LIB_ECOS_MUST_WIFI_DIR), $(call rwildcard,$(LIB_ECOS_BASE_DIR)/$d/,*.a))
+endif
+LIB_ECOS += $(LIB_ECOS_SELECT_WIFI_LIB) $(LIB_ECOS_MUST_WIFI_LIB)
+
+ifeq "$(NVT_SDIO_WIFI)" "NVT_SDIO_WIFI_RTK"
+SYMBOL_NETWORK      := cyg_sdio_devtab_entry sdio_initial rltk819x_wlan0_netdev0 rltk819x_wlan_init wlan0_main
+endif
+ifeq "$(NVT_SDIO_WIFI)" "NVT_SDIO_WIFI_BRCM"
+SYMBOL_NETWORK      := cyg_sdio_devtab_entry sdio_initial dhd_ecos_fop_dump_nv_info
+endif
+ifeq "$(NVT_SDIO_WIFI)" "NVT_SDIO_WIFI_NVT"
+SYMBOL_NETWORK      := cyg_sdio_devtab_entry sdio_initial nt18211_netdev_entry nt18211_netdev_init nvt_main nvtdiag nvt_wpa_supplicant_init nvtwsupp_main wpa_cli_main ifconfig_main iwpriv_main
+endif
+#ifeq "$(NVT_ETHERNET)" "NVT_ETHERNET_EQOS"
+#SYMBOL_NETWORK      := if_nvtimeth_netdev_entry
+#endif
+
+#get ssl library by config
+LIB_ECOS_NVTSSL_ALL    := $(wildcard $(LIB_ECOS_BASE_DIR)/ecos-nvtssl/lib/*.a)
+ifeq "$(SSL)" "SSL_ON"
+LIB_ECOS_NVTSSL        := $(wildcard $(LIB_ECOS_BASE_DIR)/ecos-nvtssl/lib/libnvtssl.a)
+else
+LIB_ECOS_NVTSSL        := $(wildcard $(LIB_ECOS_BASE_DIR)/ecos-nvtssl/lib/libnvtssl_none.a)
+endif
+LIB_ECOS_TMP2 := $(filter-out $(LIB_ECOS_NVTSSL_ALL), $(LIB_ECOS) )
+LIB_ECOS := $(LIB_ECOS_TMP2) $(LIB_ECOS_NVTSSL)
+
+#There are two eCos .o not in archive
+ALL_OBJ_R += $(wildcard $(LIB_ECOS_BASE_DIR)/eCos/lib/*.o)
+ALL_OBJ_D += $(wildcard $(LIB_ECOS_BASE_DIR)/eCos/lib/*.o)
+endif
+
+#----------------------------------------------------------------------
+# get force link IPL symbols for both debug and release
+#----------------------------------------------------------------------
+SYMBOL_IPL         := IPL_SetDZoomFCB IPL_SetSleepFCB IPL_SetWakeupFCB IPL_GetCapRawFCB IPL_SetPauseDMAFCB IPL_SetResumeDMAFCB IPL_SetImgInOutFCB IPL_SetVAFCB IPL_GetIMEHalIdxFCB IPL_GetIPLInfoFCB IPL_TrigFCB IPL_SetTrigInfoFCB IPL_Stream2PauseFCB IPL_Pause2StreamFCB DCE_D2D_CB IPE_D2D_CB IFE_D2D_CB IFE2_D2D_CB IME_D2D_CB DRE_D2D_CB RHEIME_D2D_IFECB RHEIME_D2D_DCECB RHEIME_D2D_IPECB RHEIME_D2D_IMECB RHEIME_D2D_RHECB IPL_GetCtrlFlowFCB  RHEIME_D2D_EXTFUNC_RHE_CB
+
+#----------------------------------------------------------------------
+# include the libraries
+#----------------------------------------------------------------------
+#
+# get Debug LIBs
+#
+ifeq "$(USE_ECOS_KERNEL)" "ON"
+LIB_ALG_DIR_D = $(ARC_BASE_DIR)/../Alg/ARC_eCos/Debug
+else
+LIB_ALG_DIR_D = $(ARC_BASE_DIR)/../Alg/ARC/Debug
+endif
+LIB_APP_DIR_D = $(ARC_BASE_DIR)/App/Debug
+LIB_COM_DIR_D = $(ARC_BASE_DIR)/Common/Debug
+LIB_DRV_DIR_D = $(ARC_BASE_DIR)/Drv/Debug
+LIB_LIB_DIR_D = $(ARC_BASE_DIR)/Lib/Debug
+LIB_DAL_DIR_D = $(ARC_BASE_DIR)/dal/Debug
+
+# get Alg libraries
+LIB_ALG_D := $(wildcard $(LIB_ALG_DIR_D)/*.a)
+
+# get App/AppExt libraries
+LIB_APP_D := $(wildcard $(LIB_APP_DIR_D)/*.a)
+
+# get Common libraries
+LIB_COM_D := $(wildcard $(LIB_COM_DIR_D)/*.a)
+
+# get Drv/DrvExt libraries
+LIB_DRV_ALL_D       := $(wildcard $(LIB_DRV_DIR_D)/*.a)
+
+# get Common libraries
+LIB_DAL_D := $(wildcard $(LIB_DAL_DIR_D)/*.a)
+
+LIB_SENSOR_ALL_D    := $(wildcard $(LIB_DRV_DIR_D)/CMOS*.a)
+LIB_SENSOR_D        := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR)_D.a)
+LIB_SENSOR2_D       := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR2)_D.a)
+LIB_SENSOR3_D       := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR3)_D.a)
+LIB_SENSOR4_D       := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR4)_D.a)
+LIB_SENSOR5_D       := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR5)_D.a)
+LIB_SENSOR6_D       := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR6)_D.a)
+LIB_SENSOR7_D       := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR7)_D.a)
+LIB_SENSOR8_D       := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR8)_D.a)
+LIB_SENSOR_EXT1_D   := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR_EXT1)_D.a)
+LIB_SENSOR_EXT2_D   := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR_EXT2)_D.a)
+LIB_SENSOR_EXT3_D   := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR_EXT3)_D.a)
+LIB_SENSOR_EXT4_D   := $(wildcard $(LIB_DRV_DIR_D)/$(SENSOR_EXT4)_D.a)
+
+LIB_CHIPCFG_ALL_D   := $(wildcard $(LIB_DRV_DIR_D)/CHIPCFG*.a)
+LIB_CHIPCFG_D       := $(wildcard $(LIB_DRV_DIR_D)/$(CHIPCFG)_D.a)
+
+LIB_MODELEXT_ALL_D  := $(wildcard $(LIB_DRV_DIR_D)/MODELEXT*.a)
+LIB_MODELEXT_D      := $(wildcard $(LIB_DRV_DIR_D)/$(MODELEXT)_D.a)
+
+LIB_LCD_ALL_D       := $(wildcard $(LIB_DRV_DIR_D)/Disp_*_LCD1_*.a)
+LIB_LCD_D           := $(wildcard $(LIB_DRV_DIR_D)/$(LCD)_D.a)
+
+LIB_LCD2_ALL_D      := $(wildcard $(LIB_DRV_DIR_D)/Disp_*_LCD2_*.a)
+LIB_LCD2_D          := $(wildcard $(LIB_DRV_DIR_D)/$(LCD2)_D.a)
+
+LIB_LENSDRV_ALL_D   := $(wildcard $(LIB_DRV_DIR_D)/LENSDRV*.a)
+LIB_LENSDRV_D       := $(wildcard $(LIB_DRV_DIR_D)/$(LENSDRV)_D.a)
+
+LIB_IRRX_ALL_D	    := $(wildcard $(LIB_DRV_DIR_D)/IrRx*.a)
+LIB_IRRX_D	        := $(wildcard $(LIB_DRV_DIR_D)/$(IRRX)_D.a)
+
+LIB_GYRO_ALL_D	    := $(wildcard $(LIB_DRV_DIR_D)/Gyro*.a)
+LIB_GYRO_D	        := $(wildcard $(LIB_DRV_DIR_D)/$(GYROEXT)_D.a)
+
+LIB_GSENSOR_ALL_D	:= $(wildcard $(LIB_DRV_DIR_D)/GSensor*.a)
+LIB_GSENSOR_D	    := $(wildcard $(LIB_DRV_DIR_D)/$(GSENSOREXT)_D.a)
+
+LIB_DRV_D := $(filter-out $(LIB_SENSOR_ALL_D) $(LIB_CHIPCFG_ALL_D) $(LIB_MODELEXT_ALL_D) $(LIB_LCD_ALL_D) $(LIB_LCD2_ALL_D) $(LIB_LENSDRV_ALL_D) $(LIB_GSENSOR_ALL_D) $(LIB_IRRX_ALL_D) $(LIB_GYRO_ALL_D), $(LIB_DRV_ALL_D))
+
+
+# get slide-effect libraries except default effect
+LIB_SLIDE_ALL_D     := $(wildcard $(LIB_LIB_DIR_D)/SlideEffect*.a)
+LIB_SLIDE_DEFAULT_D := $(filter %SlideEffect_Default_D.a, $(LIB_SLIDE_ALL_D))
+LIB_SLIDE_D         := $(filter-out $(LIB_SLIDE_DEFAULT_D), $(LIB_SLIDE_ALL_D))
+
+# get format-parsing libraries
+LIB_PARSER_ALL_D    := $(wildcard $(LIB_LIB_DIR_D)/PARSER*.a)
+LIB_PARSER_DEFAULT_D:= $(filter %PARSER_Default_D.a, $(LIB_PARSER_ALL_D))
+LIB_PARSER_D        := $(filter-out $(LIB_PARSER_DEFAULT_D), $(LIB_PARSER_ALL_D))
+
+# get LIBs in App (except capture library), AppExt
+# and LIB module (except driver and slide-effect libraries)
+LIB_LIB_ALL_D       := $(filter-out $(LIB_PARSER_ALL_D) $(LIB_SLIDE_ALL_D), $(wildcard $(LIB_LIB_DIR_D)/*.a))
+
+# get Lib/LibExt libraries
+LIB_FLASHLIGHT_ALL_D:= $(wildcard $(LIB_LIB_DIR_D)/FLASHLIGHT_*.a)
+LIB_FLASHLIGHT_D    := $(wildcard $(LIB_LIB_DIR_D)/$(FLASHLIGHT)_D.a)
+
+LIB_IPLEXT_COM_ALL_D  := $(wildcard $(LIB_LIB_DIR_D)/IPLEXT_COM*.a)
+LIB_IPLEXT_COM_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IPLEXT_COM)_D.a)
+
+LIB_IPL_ALL_D       := $(wildcard $(LIB_LIB_DIR_D)/IPL*.a)
+LIB_IPL1_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL1)_D.a)
+LIB_IPL2_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL2)_D.a)
+LIB_IPL3_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL3)_D.a)
+LIB_IPL4_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL4)_D.a)
+LIB_IPL5_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL5)_D.a)
+LIB_IPL6_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL6)_D.a)
+LIB_IPL7_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL7)_D.a)
+LIB_IPL8_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL8)_D.a)
+LIB_IPL_EXT1_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_EXT1)_D.a)
+LIB_IPL_EXT2_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_EXT2)_D.a)
+LIB_IPL_EXT3_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_EXT3)_D.a)
+LIB_IPL_EXT4_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_EXT4)_D.a)
+LIB_IPL_CAL_D       := $(wildcard $(LIB_LIB_DIR_D)/$(IPL)_CAL*.a)
+LIB_IPL_CAL1_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_CAL1)_D.a)
+LIB_IPL_CAL2_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_CAL2)_D.a)
+LIB_IPL_CAL3_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_CAL3)_D.a)
+LIB_IPL_CAL4_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_CAL4)_D.a)
+LIB_IPL_CAL5_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_CAL5)_D.a)
+LIB_IPL_CAL6_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_CAL6)_D.a)
+LIB_IPL_CAL7_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_CAL7)_D.a)
+LIB_IPL_CAL8_D          := $(wildcard $(LIB_LIB_DIR_D)/$(IPL_CAL8)_D.a)
+LIB_IPLSTITCH_D      := $(wildcard $(LIB_LIB_DIR_D)/IPL_STITCH_D.a)
+
+LIB_IQ_PARAM_ALL_D   := $(wildcard $(LIB_LIB_DIR_D)/IQ_PARAM_*.a)
+LIB_IQ_PARAM1_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IQS1)_D.a)
+LIB_IQ_PARAM2_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IQS2)_D.a)
+LIB_IQ_PARAM3_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IQS3)_D.a)
+LIB_IQ_PARAM4_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IQS4)_D.a)
+LIB_IQ_PARAM5_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IQS5)_D.a)
+LIB_IQ_PARAM6_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IQS6)_D.a)
+LIB_IQ_PARAM7_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IQS7)_D.a)
+LIB_IQ_PARAM8_D      := $(wildcard $(LIB_LIB_DIR_D)/$(IQS8)_D.a)
+
+LIB_AE_PARAM_ALL_D   := $(wildcard $(LIB_LIB_DIR_D)/AE_PARAM_*.a)
+LIB_AE_PARAM1_D      := $(wildcard $(LIB_LIB_DIR_D)/$(AE_PARAM1)_D.a)
+LIB_AE_PARAM2_D      := $(wildcard $(LIB_LIB_DIR_D)/$(AE_PARAM2)_D.a)
+LIB_AE_PARAM3_D      := $(wildcard $(LIB_LIB_DIR_D)/$(AE_PARAM3)_D.a)
+LIB_AE_PARAM4_D      := $(wildcard $(LIB_LIB_DIR_D)/$(AE_PARAM4)_D.a)
+LIB_AE_PARAM5_D      := $(wildcard $(LIB_LIB_DIR_D)/$(AE_PARAM5)_D.a)
+LIB_AE_PARAM6_D      := $(wildcard $(LIB_LIB_DIR_D)/$(AE_PARAM5)_D.a)
+LIB_AE_PARAM7_D      := $(wildcard $(LIB_LIB_DIR_D)/$(AE_PARAM6)_D.a)
+LIB_AE_PARAM8_D      := $(wildcard $(LIB_LIB_DIR_D)/$(AE_PARAM7)_D.a)
+
+LIB_AWB_PARAM_ALL_D  := $(wildcard $(LIB_LIB_DIR_D)/AWB_PARAM_*.a)
+LIB_AWB_PARAM1_D     := $(wildcard $(LIB_LIB_DIR_D)/$(AWB_PARAM1)_D.a)
+LIB_AWB_PARAM2_D     := $(wildcard $(LIB_LIB_DIR_D)/$(AWB_PARAM2)_D.a)
+LIB_AWB_PARAM3_D     := $(wildcard $(LIB_LIB_DIR_D)/$(AWB_PARAM3)_D.a)
+LIB_AWB_PARAM4_D     := $(wildcard $(LIB_LIB_DIR_D)/$(AWB_PARAM4)_D.a)
+LIB_AWB_PARAM5_D     := $(wildcard $(LIB_LIB_DIR_D)/$(AWB_PARAM5)_D.a)
+LIB_AWB_PARAM6_D     := $(wildcard $(LIB_LIB_DIR_D)/$(AWB_PARAM6)_D.a)
+LIB_AWB_PARAM7_D     := $(wildcard $(LIB_LIB_DIR_D)/$(AWB_PARAM7)_D.a)
+LIB_AWB_PARAM8_D     := $(wildcard $(LIB_LIB_DIR_D)/$(AWB_PARAM8)_D.a)
+
+LIB_MD_ALL_D        := $(wildcard $(LIB_LIB_DIR_D)/MD*.a)
+LIB_MD_D            := $(wildcard $(LIB_LIB_DIR_D)/$(MD)_D.a)
+LIB_MD_ALG_D        := $(filter %MDAlg_D.a, $(LIB_MD_ALL_D))
+
+LIB_IE_ALL_D        := $(wildcard $(LIB_LIB_DIR_D)/IE*.a)
+LIB_IE_D            := $(wildcard $(LIB_LIB_DIR_D)/$(IE)_D.a)
+
+LIB_RSC_ALL_D        := $(filter-out $(wildcard $(LIB_LIB_DIR_D)/RSC_*.a), RSC_D.a)
+LIB_RSC_D            := $(wildcard $(LIB_LIB_DIR_D)/$(RSC)_D.a)
+
+ifeq "$(IPL)" "IPL_FAKE"
+LIB_FLASHLIGHT_D    :=
+LIB_IPLEXT_COM_D    :=
+LIB_IPL_D           :=
+LIB_IPL_CAL_D       :=
+LIB_IPLSTITCH_D     :=
+LIB_MD_D            :=
+LIB_MD_ALG_D        :=
+LIB_IE_D            :=
+LIB_RSC_D           :=
+endif
+
+LIB_LIB_D           := $(filter-out $(LIB_RSC_ALL_D) $(LIB_IQ_PARAM_ALL_D) $(LIB_AE_PARAM_ALL_D) $(LIB_AWB_PARAM_ALL_D) $(LIB_FLASHLIGHT_ALL_D) $(LIB_IPLEXT_COM_ALL_R) $(LIB_IPL_ALL_D) $(LIB_MD_ALL_D) $(LIB_IE_ALL_D) , $(LIB_LIB_ALL_D))
+
+
+# get App/AppExt libraries
+LIB_APP_ALL_D       := $(wildcard $(LIB_APP_DIR_D)/*.a)
+
+LIB_UNIT_IPL_ALL_D  := $(wildcard $(LIB_APP_DIR_D)/ImageUnit_ImagePipe*.a)
+LIB_UNIT_FTO_ALL_D  := $(wildcard $(LIB_APP_DIR_D)/ImageUnit_Photo*.a)
+LIB_UNIT_CAP_ALL_D  := $(wildcard $(LIB_APP_DIR_D)/ImageUnit_Cap*.a)
+LIB_FTO_ALL_D       := $(wildcard $(LIB_APP_DIR_D)/Capture*.a)
+LIB_FTO_D           := $(wildcard $(LIB_APP_DIR_D)/Capture_D.a)
+LIB_CAP_ALL_D       := $(wildcard $(LIB_APP_DIR_D)/Photo*.a)
+LIB_CAP_D           := $(wildcard $(LIB_APP_DIR_D)/Photo_D.a)
+ifeq "$(IPL)" "IPL_FAKE"
+LIB_UNIT_IPL_D      := $(wildcard $(LIB_APP_DIR_D)/ImageUnit_ImagePipe_Fake_D.a)
+LIB_UNIT_FTO_D      := $(wildcard $(LIB_APP_DIR_D)/ImageUnit_Photo_Fake_D.a)
+LIB_UNIT_CAP_D      := $(wildcard $(LIB_APP_DIR_D)/ImageUnit_Cap_Fake_D.a)
+else
+LIB_UNIT_IPL_D      := $(wildcard $(LIB_APP_DIR_D)/ImageUnit_ImagePipe_D.a)
+LIB_UNIT_FTO_D      := $(wildcard $(LIB_APP_DIR_D)/ImageUnit_Photo_D.a)
+LIB_UNIT_CAP_D      := $(wildcard $(LIB_APP_DIR_D)/ImageUnit_Cap_D.a)
+endif
+
+LIB_P2PCAM_ALL_D    := $(wildcard $(LIB_APP_DIR_D)/p2pcam_*.a)
+LIB_P2PCAM_D        := $(wildcard $(LIB_APP_DIR_D)/$(P2PCAM)_D.a)
+
+LIB_APP_D           := $(filter-out $(LIB_P2PCAM_ALL_D) $(LIB_UNIT_IPL_ALL_D) $(LIB_UNIT_FTO_ALL_D) $(LIB_UNIT_CAP_ALL_D) $(LIB_FTO_ALL_D) $(LIB_CAP_ALL_D), $(LIB_APP_ALL_D))
+
+
+
+
+#
+# get Release LIBs
+#
+ifeq "$(USE_ECOS_KERNEL)" "ON"
+LIB_ALG_DIR_R = $(ARC_BASE_DIR)/../Alg/ARC_eCos/Release
+else
+LIB_ALG_DIR_R = $(ARC_BASE_DIR)/../Alg/ARC/Release
+endif
+LIB_APP_DIR_R = $(ARC_BASE_DIR)/App/Release
+LIB_COM_DIR_R = $(ARC_BASE_DIR)/Common/Release
+LIB_DRV_DIR_R = $(ARC_BASE_DIR)/Drv/Release
+LIB_LIB_DIR_R = $(ARC_BASE_DIR)/Lib/Release
+LIB_DAL_DIR_R = $(ARC_BASE_DIR)/dal/Release
+
+# get Alg libraries
+LIB_ALG_R := $(wildcard $(LIB_ALG_DIR_R)/*.a)
+
+# get App/AppExt libraries
+LIB_APP_R := $(wildcard $(LIB_APP_DIR_R)/*.a)
+
+# get Common libraries
+LIB_COM_R := $(wildcard $(LIB_COM_DIR_R)/*.a)
+
+# get Drv/DrvExt libraries
+LIB_DRV_ALL_R       := $(wildcard $(LIB_DRV_DIR_R)/*.a)
+
+# get dal libraries
+LIB_DAL_R := $(wildcard $(LIB_DAL_DIR_R)/*.a)
+
+LIB_SENSOR_ALL_R    := $(wildcard $(LIB_DRV_DIR_R)/CMOS_*.a)
+LIB_SENSOR_R        := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR1).a)
+LIB_SENSOR2_R       := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR2).a)
+LIB_SENSOR3_R       := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR3).a)
+LIB_SENSOR4_R       := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR4).a)
+LIB_SENSOR5_R       := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR5).a)
+LIB_SENSOR6_R       := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR6).a)
+LIB_SENSOR7_R       := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR7).a)
+LIB_SENSOR8_R       := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR8).a)
+LIB_SENSOR_EXT1_R   := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR_EXT1).a)
+LIB_SENSOR_EXT2_R   := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR_EXT2).a)
+LIB_SENSOR_EXT3_R   := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR_EXT3).a)
+LIB_SENSOR_EXT4_R   := $(wildcard $(LIB_DRV_DIR_R)/$(SENSOR_EXT4).a)
+
+LIB_CHIPCFG_ALL_R   := $(wildcard $(LIB_DRV_DIR_R)/CHIPCFG*.a)
+LIB_CHIPCFG_R       := $(wildcard $(LIB_DRV_DIR_R)/$(CHIPCFG).a)
+
+LIB_MODELEXT_ALL_R  := $(wildcard $(LIB_DRV_DIR_R)/MODELEXT*.a)
+LIB_MODELEXT_R      := $(wildcard $(LIB_DRV_DIR_R)/$(MODELEXT).a)
+
+LIB_LCD_ALL_R       := $(wildcard $(LIB_DRV_DIR_R)/Disp_*_LCD1_*.a)
+LIB_LCD_R           := $(wildcard $(LIB_DRV_DIR_R)/$(LCD).a)
+
+LIB_LCD2_ALL_R      := $(wildcard $(LIB_DRV_DIR_R)/Disp_*_LCD2_*.a)
+LIB_LCD2_R          := $(wildcard $(LIB_DRV_DIR_R)/$(LCD2).a)
+
+LIB_LENSDRV_ALL_R   := $(wildcard $(LIB_DRV_DIR_R)/LENSDRV*.a)
+LIB_LENSDRV_R       := $(wildcard $(LIB_DRV_DIR_R)/$(LENSDRV).a)
+
+LIB_IRRX_ALL_R      := $(wildcard $(LIB_DRV_DIR_R)/IrRx*.a)
+LIB_IRRX_R	        := $(wildcard $(LIB_DRV_DIR_R)/$(IRRX).a)
+
+LIB_GYRO_ALL_R      := $(wildcard $(LIB_DRV_DIR_R)/Gyro_*.a)
+LIB_GYRO_R          := $(wildcard $(LIB_DRV_DIR_R)/$(GYROEXT).a)
+
+LIB_GSENSOR_ALL_R   := $(wildcard $(LIB_DRV_DIR_R)/GSensor_*.a)
+LIB_GSENSOR_R       := $(wildcard $(LIB_DRV_DIR_R)/$(GSENSOREXT).a)
+
+LIB_DRV_R := $(filter-out $(LIB_SENSOR_ALL_R) $(LIB_CHIPCFG_ALL_R) $(LIB_MODELEXT_ALL_R) $(LIB_LCD_ALL_R) $(LIB_LCD2_ALL_R) $(LIB_LENSDRV_ALL_R) $(LIB_IRRX_ALL_R) $(LIB_GYRO_ALL_R) $(LIB_GSENSOR_ALL_R), $(LIB_DRV_ALL_R))
+
+# get slide-effect libraries except default effect
+LIB_SLIDE_ALL_R     := $(wildcard $(LIB_LIB_DIR_R)/SlideEffect*.a)
+LIB_SLIDE_DEFAULT_R := $(filter %SlideEffect_Default.a, $(LIB_SLIDE_ALL_R))
+LIB_SLIDE_R         := $(filter-out $(LIB_SLIDE_DEFAULT_R), $(LIB_SLIDE_ALL_R))
+
+# get format-parsing libraries
+LIB_PARSER_ALL_R    := $(wildcard $(LIB_LIB_DIR_R)/PARSER*.a)
+LIB_PARSER_DEFAULT_R:= $(filter %PARSER_Default.a, $(LIB_PARSER_ALL_R))
+LIB_PARSER_R        := $(filter-out $(LIB_PARSER_DEFAULT_R), $(LIB_PARSER_ALL_R))
+
+# get LIBs in App (except capture library), AppExt
+# and LIB module (except driver and slide-effect libraries)
+LIB_LIB_ALL_R       := $(filter-out $(LIB_PARSER_ALL_R) $(LIB_SLIDE_ALL_R), $(wildcard $(LIB_LIB_DIR_R)/*.a))
+
+# get Lib/LibExt libraries
+LIB_FLASHLIGHT_ALL_R:= $(wildcard $(LIB_LIB_DIR_R)/FLASHLIGHT_*.a)
+LIB_FLASHLIGHT_R    := $(wildcard $(LIB_LIB_DIR_R)/$(FLASHLIGHT).a)
+
+LIB_IPLEXT_COM_ALL_R  := $(wildcard $(LIB_LIB_DIR_R)/IPLEXT_COM*.a)
+LIB_IPLEXT_COM_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IPLEXT_COM).a)
+
+LIB_IPL_ALL_R       := $(wildcard $(LIB_LIB_DIR_R)/IPL*.a)
+LIB_IPL1_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL1).a)
+LIB_IPL2_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL2).a)
+LIB_IPL3_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL3).a)
+LIB_IPL4_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL4).a)
+LIB_IPL5_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL5).a)
+LIB_IPL6_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL6).a)
+LIB_IPL7_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL7).a)
+LIB_IPL8_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL8).a)
+LIB_IPL_EXT1_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_EXT1).a)
+LIB_IPL_EXT2_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_EXT2).a)
+LIB_IPL_EXT3_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_EXT3).a)
+LIB_IPL_EXT4_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_EXT4).a)
+LIB_IPL_CAL_R       := $(wildcard $(LIB_LIB_DIR_R)/$IPL_CAL*.a)
+LIB_IPL_CAL1_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_CAL1).a)
+LIB_IPL_CAL2_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_CAL2).a)
+LIB_IPL_CAL3_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_CAL3).a)
+LIB_IPL_CAL4_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_CAL4).a)
+LIB_IPL_CAL5_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_CAL5).a)
+LIB_IPL_CAL6_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_CAL6).a)
+LIB_IPL_CAL7_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_CAL7).a)
+LIB_IPL_CAL8_R          := $(wildcard $(LIB_LIB_DIR_R)/$(IPL_CAL8).a)
+LIB_IPLSTITCH_R     := $(wildcard $(LIB_LIB_DIR_R)/IPL_STITCH.a)
+
+LIB_IQ_PARAM_ALL_R  := $(wildcard $(LIB_LIB_DIR_R)/IQ_PARAM_*.a)
+LIB_IQ_PARAM1_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IQ_PARAM1).a)
+LIB_IQ_PARAM2_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IQ_PARAM2).a)
+LIB_IQ_PARAM3_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IQ_PARAM3).a)
+LIB_IQ_PARAM4_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IQ_PARAM4).a)
+LIB_IQ_PARAM5_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IQ_PARAM5).a)
+LIB_IQ_PARAM6_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IQ_PARAM6).a)
+LIB_IQ_PARAM7_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IQ_PARAM7).a)
+LIB_IQ_PARAM8_R      := $(wildcard $(LIB_LIB_DIR_R)/$(IQ_PARAM8).a)
+
+LIB_AE_PARAM_ALL_R   := $(wildcard $(LIB_LIB_DIR_R)/AE_PARAM_*.a)
+LIB_AE_PARAM1_R      := $(wildcard $(LIB_LIB_DIR_R)/$(AE_PARAM1).a)
+LIB_AE_PARAM2_R      := $(wildcard $(LIB_LIB_DIR_R)/$(AE_PARAM2).a)
+LIB_AE_PARAM3_R      := $(wildcard $(LIB_LIB_DIR_R)/$(AE_PARAM3).a)
+LIB_AE_PARAM4_R      := $(wildcard $(LIB_LIB_DIR_R)/$(AE_PARAM4).a)
+LIB_AE_PARAM5_R      := $(wildcard $(LIB_LIB_DIR_R)/$(AE_PARAM5).a)
+LIB_AE_PARAM6_R      := $(wildcard $(LIB_LIB_DIR_R)/$(AE_PARAM6).a)
+LIB_AE_PARAM7_R      := $(wildcard $(LIB_LIB_DIR_R)/$(AE_PARAM7).a)
+LIB_AE_PARAM8_R      := $(wildcard $(LIB_LIB_DIR_R)/$(AE_PARAM8).a)
+
+LIB_AWB_PARAM_ALL_R  := $(wildcard $(LIB_LIB_DIR_R)/AWB_PARAM_*.a)
+LIB_AWB_PARAM1_R     := $(wildcard $(LIB_LIB_DIR_R)/$(AWB_PARAM1).a)
+LIB_AWB_PARAM2_R     := $(wildcard $(LIB_LIB_DIR_R)/$(AWB_PARAM2).a)
+LIB_AWB_PARAM3_R     := $(wildcard $(LIB_LIB_DIR_R)/$(AWB_PARAM3).a)
+LIB_AWB_PARAM4_R     := $(wildcard $(LIB_LIB_DIR_R)/$(AWB_PARAM4).a)
+LIB_AWB_PARAM5_R     := $(wildcard $(LIB_LIB_DIR_R)/$(AWB_PARAM5).a)
+LIB_AWB_PARAM6_R     := $(wildcard $(LIB_LIB_DIR_R)/$(AWB_PARAM6).a)
+LIB_AWB_PARAM7_R     := $(wildcard $(LIB_LIB_DIR_R)/$(AWB_PARAM7).a)
+LIB_AWB_PARAM8_R     := $(wildcard $(LIB_LIB_DIR_R)/$(AWB_PARAM8).a)
+
+LIB_MD_ALL_R        := $(wildcard $(LIB_LIB_DIR_R)/MD*.a)
+LIB_MD_R            := $(wildcard $(LIB_LIB_DIR_R)/$(MD).a)
+LIB_MD_ALG_R        := $(filter %MDAlg.a, $(LIB_MD_ALL_R))
+
+LIB_IE_ALL_R        := $(wildcard $(LIB_LIB_DIR_R)/IE*.a)
+LIB_IE_R            := $(wildcard $(LIB_LIB_DIR_R)/$(IE).a)
+
+LIB_RSC_ALL_R       := $(wildcard $(LIB_LIB_DIR_R)/RSC_*.a)
+LIB_RSC_R           := $(wildcard $(LIB_LIB_DIR_R)/$(RSC).a)
+
+ifeq "$(IPL)" "IPL_FAKE"
+LIB_FLASHLIGHT_R    :=
+LIB_IPLEXT_COM_R    :=
+LIB_IPL_R           :=
+LIB_IPL_CAL_R       :=
+LIB_IPLSTITCH_R     :=
+LIB_MD_R            :=
+LIB_MD_ALG_R        :=
+LIB_IE_R            :=
+LIB_RSC_R           :=
+endif
+
+LIB_LIB_R           := $(filter-out $(LIB_RSC_ALL_R) $(LIB_IQ_PARAM_ALL_R) $(LIB_AE_PARAM_ALL_R) $(LIB_AWB_PARAM_ALL_R) $(LIB_FLASHLIGHT_ALL_R) $(LIB_IPLEXT_COM_ALL_R) $(LIB_IPL_ALL_R) $(LIB_MD_ALL_R) $(LIB_IE_ALL_R) , $(LIB_LIB_ALL_R))
+
+# get App/AppExt libraries
+LIB_APP_ALL_R       := $(wildcard $(LIB_APP_DIR_R)/*.a)
+
+LIB_UNIT_IPL_ALL_R  := $(wildcard $(LIB_APP_DIR_R)/ImageUnit_ImagePipe*.a)
+LIB_UNIT_FTO_ALL_R  := $(wildcard $(LIB_APP_DIR_R)/ImageUnit_Photo*.a)
+LIB_UNIT_CAP_ALL_R  := $(wildcard $(LIB_APP_DIR_R)/ImageUnit_Cap*.a)
+LIB_FTO_ALL_R       := $(wildcard $(LIB_APP_DIR_R)/Capture*.a)
+LIB_FTO_R           := $(wildcard $(LIB_APP_DIR_R)/Capture.a)
+LIB_CAP_ALL_R       := $(wildcard $(LIB_APP_DIR_R)/Photo*.a)
+LIB_CAP_R           := $(wildcard $(LIB_APP_DIR_R)/Photo.a)
+ifeq "$(IPL)" "IPL_FAKE"
+LIB_UNIT_IPL_R      := $(wildcard $(LIB_APP_DIR_R)/ImageUnit_ImagePipe_Fake.a)
+LIB_UNIT_FTO_R      := $(wildcard $(LIB_APP_DIR_R)/ImageUnit_Photo_Fake.a)
+LIB_UNIT_CAP_R      := $(wildcard $(LIB_APP_DIR_R)/ImageUnit_Cap_Fake.a)
+else
+LIB_UNIT_IPL_R      := $(wildcard $(LIB_APP_DIR_R)/ImageUnit_ImagePipe.a)
+LIB_UNIT_FTO_R      := $(wildcard $(LIB_APP_DIR_R)/ImageUnit_Photo.a)
+LIB_UNIT_CAP_R      := $(wildcard $(LIB_APP_DIR_R)/ImageUnit_Cap.a)
+endif
+
+LIB_P2PCAM_ALL_R    := $(wildcard $(LIB_APP_DIR_R)/p2pcam_*.a)
+LIB_P2PCAM_R        := $(wildcard $(LIB_APP_DIR_R)/$(P2PCAM).a)
+
+LIB_APP_R           := $(filter-out $(LIB_P2PCAM_ALL_R) $(LIB_UNIT_IPL_ALL_R) $(LIB_UNIT_FTO_ALL_R) $(LIB_UNIT_CAP_ALL_R) $(LIB_FTO_ALL_R) $(LIB_CAP_ALL_R), $(LIB_APP_ALL_R))
+
+
+# get total libraries for Debug & Release mode; note we cannot get string of LIB_R from LIB_D, or vice versa,
+# because we may build Debug and Release output separately, the library of one mode maybe not exist, and cause
+# the link problem. So, while adding/deleting libraries, please be patient to do it for Debug and Release mode both.
+
+LIB_R := \
+    $(LIB_ALG_R) \
+    $(LIB_APP_R) \
+    $(LIB_COM_R) \
+    $(LIB_DRV_R) \
+    $(LIB_DAL_R) \
+    $(LIB_SENSOR_R) \
+    $(LIB_SENSOR2_R) \
+    $(LIB_SENSOR3_R) \
+    $(LIB_SENSOR4_R) \
+    $(LIB_SENSOR5_R) \
+    $(LIB_SENSOR6_R) \
+    $(LIB_SENSOR7_R) \
+    $(LIB_SENSOR8_R) \
+    $(LIB_SENSOR_EXT1_R) \
+    $(LIB_SENSOR_EXT2_R) \
+    $(LIB_SENSOR_EXT3_R) \
+    $(LIB_SENSOR_EXT4_R) \
+    $(LIB_CHIPCFG_R) \
+    $(LIB_MODELEXT_R) \
+    $(LIB_LCD_R) \
+    $(LIB_LCD2_R) \
+    $(LIB_LENSDRV_R) \
+    $(LIB_IRRX_R) \
+    $(LIB_GYRO_R) \
+    $(LIB_GSENSOR_R) \
+    $(LIB_LIB_R) \
+    $(LIB_SLIDE_R) \
+    $(LIB_SLIDE_DEFAULT_R) \
+    $(LIB_PARSER_R) \
+    $(LIB_PARSER_DEFAULT_R) \
+    $(LIB_FLASHLIGHT_R) \
+    $(LIB_IPLEXT_COM_R) \
+    $(LIB_IPL1_R) \
+    $(LIB_IPL2_R) \
+    $(LIB_IPL3_R) \
+    $(LIB_IPL4_R) \
+    $(LIB_IPL5_R) \
+    $(LIB_IPL6_R) \
+    $(LIB_IPL7_R) \
+    $(LIB_IPL8_R) \
+    $(LIB_IPL_EXT1_R) \
+    $(LIB_IPL_EXT2_R) \
+    $(LIB_IPL_EXT3_R) \
+    $(LIB_IPL_EXT4_R) \
+    $(LIB_IPL_CAL1_R) \
+    $(LIB_IPL_CAL2_R) \
+    $(LIB_IPL_CAL3_R) \
+    $(LIB_IPL_CAL4_R) \
+    $(LIB_IPL_CAL5_R) \
+    $(LIB_IPL_CAL6_R) \
+    $(LIB_IPL_CAL7_R) \
+    $(LIB_IPL_CAL8_R) \
+    $(LIB_IPLSTITCH_R) \
+    $(LIB_IPL_CAL_R) \
+    $(LIB_IQ_PARAM1_R) \
+    $(LIB_IQ_PARAM2_R) \
+    $(LIB_IQ_PARAM3_R) \
+    $(LIB_IQ_PARAM4_R) \
+    $(LIB_IQ_PARAM5_R) \
+    $(LIB_IQ_PARAM6_R) \
+    $(LIB_IQ_PARAM7_R) \
+    $(LIB_IQ_PARAM8_R) \
+    $(LIB_AE_PARAM1_R) \
+    $(LIB_AE_PARAM2_R) \
+    $(LIB_AE_PARAM3_R) \
+    $(LIB_AE_PARAM4_R) \
+    $(LIB_AE_PARAM5_R) \
+    $(LIB_AE_PARAM6_R) \
+    $(LIB_AE_PARAM7_R) \
+    $(LIB_AE_PARAM8_R) \
+    $(LIB_AWB_PARAM1_R) \
+    $(LIB_AWB_PARAM2_R) \
+    $(LIB_AWB_PARAM3_R) \
+    $(LIB_AWB_PARAM4_R) \
+    $(LIB_AWB_PARAM5_R) \
+    $(LIB_AWB_PARAM6_R) \
+    $(LIB_AWB_PARAM7_R) \
+    $(LIB_AWB_PARAM8_R) \
+    $(LIB_MD_R) \
+    $(LIB_MD_ALG_R) \
+    $(LIB_IE_R) \
+    $(LIB_RSC_R) \
+	$(LIB_FTO_R) \
+    $(LIB_CAP_R) \
+    $(LIB_P2PCAM_R) \
+    $(LIB_UNIT_IPL_R) \
+    $(LIB_UNIT_FTO_R) \
+    $(LIB_UNIT_CAP_R)
+
+LIB_D := \
+    $(LIB_ALG_D) \
+    $(LIB_APP_D) \
+    $(LIB_COM_D) \
+    $(LIB_DRV_D) \
+    $(LIB_DAL_D) \
+    $(LIB_SENSOR_D) \
+    $(LIB_SENSOR2_D) \
+    $(LIB_SENSOR3_D) \
+    $(LIB_SENSOR4_D) \
+    $(LIB_SENSOR5_D) \
+    $(LIB_SENSOR6_D) \
+    $(LIB_SENSOR7_D) \
+    $(LIB_SENSOR8_D) \
+    $(LIB_SENSOR_EXT1_D) \
+    $(LIB_SENSOR_EXT2_D) \
+    $(LIB_SENSOR_EXT3_D) \
+    $(LIB_SENSOR_EXT4_D) \
+    $(LIB_CHIPCFG_D) \
+    $(LIB_MODELEXT_D) \
+    $(LIB_LCD_D) \
+    $(LIB_LCD2_D) \
+    $(LIB_LENSDRV_D) \
+    $(LIB_IRRX_D) \
+    $(LIB_GYRO_D) \
+    $(LIB_GSENSOR_D) \
+    $(LIB_LIB_D) \
+    $(LIB_SLIDE_D) \
+    $(LIB_SLIDE_DEFAULT_D) \
+    $(LIB_PARSER_D) \
+    $(LIB_PARSER_DEFAULT_D) \
+    $(LIB_FLASHLIGHT_D) \
+    $(LIB_IPLEXT_COM_D) \
+    $(LIB_IPL1_D) \
+    $(LIB_IPL2_D) \
+    $(LIB_IPL3_D) \
+    $(LIB_IPL4_D) \
+    $(LIB_IPL5_D) \
+    $(LIB_IPL6_D) \
+    $(LIB_IPL7_D) \
+    $(LIB_IPL8_D) \
+    $(LIB_IPL_EXT1_D) \
+    $(LIB_IPL_EXT2_D) \
+    $(LIB_IPL_EXT3_D) \
+    $(LIB_IPL_EXT4_D) \
+    $(LIB_IPL_CAL1_D) \
+    $(LIB_IPL_CAL2_D) \
+    $(LIB_IPL_CAL3_D) \
+    $(LIB_IPL_CAL4_D) \
+    $(LIB_IPL_CAL5_D) \
+    $(LIB_IPL_CAL6_D) \
+    $(LIB_IPL_CAL7_D) \
+    $(LIB_IPL_CAL8_D) \
+    $(LIB_IPLSTITCH_D) \
+    $(LIB_IPL_CAL_D) \
+    $(LIB_IQ_PARAM1_D) \
+    $(LIB_IQ_PARAM2_D) \
+    $(LIB_IQ_PARAM3_D) \
+    $(LIB_IQ_PARAM4_D) \
+    $(LIB_IQ_PARAM5_D) \
+    $(LIB_IQ_PARAM6_D) \
+    $(LIB_IQ_PARAM7_D) \
+    $(LIB_IQ_PARAM8_D) \
+    $(LIB_AE_PARAM1_D) \
+    $(LIB_AE_PARAM2_D) \
+    $(LIB_AE_PARAM3_D) \
+    $(LIB_AE_PARAM4_D) \
+    $(LIB_AE_PARAM5_D) \
+    $(LIB_AE_PARAM6_D) \
+    $(LIB_AE_PARAM7_D) \
+    $(LIB_AE_PARAM8_D) \
+    $(LIB_AWB_PARAM1_D) \
+    $(LIB_AWB_PARAM2_D) \
+    $(LIB_AWB_PARAM3_D) \
+    $(LIB_AWB_PARAM4_D) \
+    $(LIB_AWB_PARAM5_D) \
+    $(LIB_AWB_PARAM6_D) \
+    $(LIB_AWB_PARAM7_D) \
+    $(LIB_AWB_PARAM8_D) \
+    $(LIB_MD_D) \
+    $(LIB_MD_ALG_D) \
+    $(LIB_IE_D) \
+    $(LIB_RSC_D) \
+    $(LIB_FTO_D) \
+    $(LIB_CAP_D) \
+    $(LIB_P2PCAM_D) \
+    $(LIB_UNIT_IPL_D) \
+    $(LIB_UNIT_FTO_D) \
+    $(LIB_UNIT_CAP_D)
+
+# If some libraries only available in Release mode, add these libraries in Debug mode too.
+LIB_D += $(filter-out $(subst Debug/,Release/,$(LIB_D:_D.a=.a)),$(LIB_R))
+
+# Append eCos library to both Debug and Release mode
+# (We don't have debug mode's eCos library)
+LIB_R += $(LIB_ECOS)
+LIB_D += $(LIB_ECOS)
+
+#----------------------------------------------------------------------
+# set the make outputs
+#----------------------------------------------------------------------
+# for debug target
+IMAGE_D = $(IMG_DEBUG)/$(PRJ_NAME)_D.axf
+BIN_D   = $(IMG_DEBUG)/$(BIN_NAME).bin
+MAP_D   = $(IMG_DEBUG)/$(PRJ_NAME)_D.txt
+MAP2_D   = $(IMG_DEBUG)/$(PRJ_NAME)_ldmap_D.txt
+SYM_D   = $(IMG_DEBUG)/$(PRJ_NAME)_D.sym
+DASM_D  = $(IMG_DEBUG)/$(PRJ_NAME)_dasm_D.txt
+ifeq "$(MODELEXT_BUILT_IN)" "MODELEXT_BUILT_IN_OFF"
+MODELEXT_D = $(IMG_DEBUG)/$(BIN_NAME).ext.bin
+endif
+
+
+# for release target
+IMAGE_R = $(IMG_RELEASE)/$(PRJ_NAME).axf
+BIN_R   = $(IMG_RELEASE)/$(BIN_NAME).bin
+MAP_R   = $(IMG_RELEASE)/$(PRJ_NAME).txt
+MAP2_R   = $(IMG_RELEASE)/$(PRJ_NAME)_ldmap.txt
+SYM_R   = $(IMG_RELEASE)/$(PRJ_NAME).sym
+DASM_R  = $(IMG_RELEASE)/$(PRJ_NAME)_dasm.txt
+ifeq "$(MODELEXT_BUILT_IN)" "MODELEXT_BUILT_IN_OFF"
+MODELEXT_R = $(IMG_RELEASE)/$(BIN_NAME).ext.bin
+endif
+
+#----------------------------------------------------------------------
+# if enable LDS_MAP
+#----------------------------------------------------------------------
+ifeq "$(LDS_MAP)" "ON"
+LDMAP_D = -Map $(MAP2_D)
+LDMAP_R = -Map $(MAP2_R)
+endif
+
+#----------------------------------------------------------------------
+# set the warning/error log file option
+#----------------------------------------------------------------------
+log_file = log_Prj.txt
+
+# 0: Standard input (stdin), 1: Standard output (stdout), 2: Standard error (stderr)
+# 2>>$(log_file) means redirect standard error to $(log_file)
+# 2>>/dev/null means redirect standard error to NULL (Don't display error message)
+ifeq "$(LOG_ERR)" "ON"
+LOG_OPTION = 2>>$(log_file)
+endif
+
+#----------------------------------------------------------------------
+# set robustness checking log file
+#----------------------------------------------------------------------
+lint_file       = lint_Prj.txt
+lintopt_file    = options_Prj.lnt
+lintsum_file    = lintsum_Prj.txt
+
+#----------------------------------------------------------------------
+# set the make targets
+#----------------------------------------------------------------------
+build_D: make_debug_begin prepare_log $(IMAGE_D) $(BIN_D)
+build_R: make_release_begin prepare_log $(IMAGE_R) $(BIN_R)
+build_pipe_D: $(IMAGE_D) $(BIN_D)
+build_pipe_R: $(IMAGE_R) $(BIN_R)
+
+ifeq "$(ISOLATE_DEP)" "ON"
+build_DEP: make_dep_begin $(SRC) $(ASM) $(CPP_SRC) $(ALL_DEP)
+endif
+
+build_LINT: make_lint_begin $(LINT_FILE)
+
+prepare_log:
+	@$(LOG_OPTION)
+
+ifeq "$(ARCH)" "ARM"
+#arm-none-eabi-gcc -march=armv7-a -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=softfp -print-file-name=libm.a
+ifeq "$(FPU)" "hard"
+libgcc_path     = $(shell $(CC) -march=armv7-a -mcpu=$(CPU) -mabi=aapcs -mfpu=neon -mfloat-abi=$(FPU) -print-libgcc-file-name)
+libgcc_dir_el   = $(shell dirname "$(libgcc_path)")
+libstdc_path    = $(shell $(CC) -msoft-float -print-file-name=libstdc++.a)
+libstdc_dir_el  = $(shell dirname "$(libstdc_path)")
+libm_path    		= $(shell $(CC) -march=armv7-a -mcpu=$(CPU) -mfpu=neon -mfloat-abi=$(FPU) -print-file-name=libm.a)
+libm_dir  			= $(shell dirname "$(libm_path)")
+else
+libgcc_path     = $(shell $(CC) -march=armv7-a -mcpu=$(CPU) -mabi=aapcs -mfloat-abi=$(FPU) -print-libgcc-file-name)
+libgcc_dir_el   = $(shell dirname "$(libgcc_path)")
+libstdc_path    = $(shell $(CC) -msoft-float -print-file-name=libstdc++.a)
+libstdc_dir_el  = $(shell dirname "$(libstdc_path)")
+libm_path    		= $(shell $(CC) -march=armv7-a -mcpu=$(CPU) -mfloat-abi=$(FPU) -print-file-name=libm.a)
+libm_dir  			= $(shell dirname "$(libm_path)")
+endif
+
+
+define append_modelext
+	echo Append $1 into $4. \
+	&& $(AR) x $3 $1.o \
+	&& $(FE) --only-section=modelext_header.$1 -O binary -S -R .comment -R .note $1.o $2/$1.header \
+	&& cat $2/$1.header >> $4 \
+    && $(FE) --only-section=modelext_data.$1 -O binary -S -R .comment -R .note $1.o $2/$1.data \
+    && cat $2/$1.data >> $4
+endef
+
+
+#Replace string existing in lds file
+ifeq "$(SCATTER)" "EmuKit_cpu2.lds"
+ifeq "$(PLATFORM_MEM_SIZE)" "SDRAM_SIZE_256"
+    BOARD_UITRON_ADDR = 0x8000000
+endif
+ifeq "$(PLATFORM_MEM_SIZE)" "SDRAM_SIZE_512"
+    BOARD_UITRON_ADDR = 0x10000000
+endif
+ifeq "$(PLATFORM_MEM_SIZE)" "SDRAM_SIZE_1024"
+    BOARD_UITRON_ADDR = 0x20000000
+endif
+endif
+
+LD_REPLACE_VAR  = sed \
+	-e's/$$BOARD_UITRON_ADDR/$(BOARD_UITRON_ADDR)/g' \
+	-e's/$$SYMBOL_IPL/$(SYMBOL_IPL)/g' \
+	-e's/$$CHIPCFG/$(CHIPCFG)/g' \
+	-e's/$$MODELEXT/$(MODELEXT)/g' \
+	-e's/$$LCD/$(LCD)/g' \
+	-e's/$$IPL_1/$(IPL1)/g' \
+	-e's/$$IPL_2/$(IPL2)/g' \
+	-e's/$$SENSOR_1/$(SENSOR1)/g' \
+	-e's/$$SENSOR_2/$(SENSOR2)/g' \
+	-e's/$$RSC/$(RSC)/g' \
+	-e's/$$LENSDRV/$(LENSDRV)/g' \
+	-e's/$$GSENSOREXT/$(GSENSOREXT)/g' \
+	-e's/$$SYMBOL_NETWORK/$(SYMBOL_NETWORK)/g' \
+	$(SCATTER)
+
+#The folder, the working space to fill the full path into lds file
+LD_DIR_WORKING_D= $(IMG_BASE_DIR)/Debug/ObjectLds
+#The this collect all of lib version string to extern on lds
+LD_EXTERN_STR_D = $(LD_DIR_WORKING_D)/extern.txt
+#Generate the working folder and temp lds file called replace.lds
+LD_REPLACE_LDS_D= $(shell mkdir -p $(LD_DIR_WORKING_D)) $(shell $(LD_REPLACE_VAR) > $(LD_DIR_WORKING_D)/replace.lds)
+#The real lds file replaced of using by linker
+LD_PATH_LDS_D   = $(LD_DIR_WORKING_D)/$(basename $(SCATTER))_D.lds
+#Here have some steps as following to get a some files explained below,
+#Step 1: Generate temp lds file
+#Step 2: export the contents of $(LIB_D) into libs.txt
+#Step 3: export the contents of $(ALL_OBJ_D) into objs.txt
+#Step 4: Give mips-nvt.exe libs.txt, objs.txt and replace.lds to get ld_ext.d, ld_lib.txt, ld_lib_ban.txt and real lds file for linker.
+#  Where,
+#    ld_ext.d is a decency file depends on .o used in lds file
+#    ld_lib_ban is a list of .a files to ban, because linker should use the .a file after extracting .o.
+#    real lds file is replaced by full path.
+LD_DFILE_D      = $(LD_REPLACE_LDS_D) $(shell echo $(LIB_D) > $(LD_DIR_WORKING_D)/libs.txt ) $(shell echo $(ALL_OBJ_D) > $(LD_DIR_WORKING_D)/objs.txt ) $(shell $(LDNVT) --lds-dst=$(LD_PATH_LDS_D) --lds-dir=$(LD_DIR_WORKING_D) --lds-src=$(LD_DIR_WORKING_D)/replace.lds --libs-src=$(LD_DIR_WORKING_D)/libs.txt --objs-src=$(LD_DIR_WORKING_D)/objs.txt --objs-dir=$(OBJ_DEBUG)) $(LD_DIR_WORKING_D)/ld_ext.d
+#Getting the contents of ld_lib.txt
+LD_LIB_D        = $(shell cat $(LD_DIR_WORKING_D)/ld_lib.txt 2>>/dev/null)
+#Getting the contents of ld_lib_ban.txt
+LD_LIB_BAN_D    = $(shell cat $(LD_DIR_WORKING_D)/ld_lib_ban.txt 2>>/dev/null)
+
+ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),debug build_pipe_D))
+include $(LD_DFILE_D)
+endif
+
+$(LD_LIB_D): $(MODELEXT_D)
+
+$(MODELEXT_D): $(LIB_MODELEXT_D)
+	@echo Creating modelext $@ ... \
+	&& rm -f $@ \
+	&& $(call append_modelext,modelext_info,$(OBJ_DEBUG),$<,$@) \
+	&& $(call append_modelext,bin_info,$(OBJ_DEBUG),$<,$@) \
+	&& $(call append_modelext,pinmux_cfg,$(OBJ_DEBUG),$<,$@) \
+	&& $(call append_modelext,intdir_cfg,$(OBJ_DEBUG),$<,$@) \
+	&& $(call append_modelext,emb_partition_info,$(OBJ_DEBUG),$<,$@) \
+	&& $(call append_modelext,gpio_info,$(OBJ_DEBUG),$<,$@) \
+	&& $(call append_modelext,dram_partition_info,$(OBJ_DEBUG),$<,$@) \
+	&& $(call append_modelext,model_cfg,$(OBJ_DEBUG),$<,$@) \
+	&& $(EBIN) $(EBIN_METHOD) $@ 0x18 $(EBIN_MNAME)
+	@BIN_SIZE=`ls -l $@ | cut -d ' ' -f 5`; \
+	RESIDUAL=$$(($${BIN_SIZE} % 4)); \
+	if [ "$${RESIDUAL}" -ne "0" ]; then \
+		echo "sizeof($@) is not 4-byte aligned"; \
+		exit 1; \
+	fi
+
+$(LD_EXTERN_STR_D): $(LIB_D)
+	@echo make lds extern string ...
+	@echo $(LIB_D) > tmp_awk1
+	$(OBJDUMP) -h @tmp_awk1 | grep "\.version\.info" | sed 's/[^.]*\.version\.info\.[^\.]*\.\([^\ ]*\).*/\1_LIBRARY_VERSION_INFO/g' > tmp_awk2 \
+	&& echo "EXTERN(" >> $@ \
+	&& cat tmp_awk2 >> $@ \
+	&& echo ")" >> $@ \
+	&& rm tmp_awk1 \
+	&& rm tmp_awk2
+
+$(IMAGE_D): $(SRC) $(ASM) $(CPP_SRC) $(ALL_OBJ_D) $(LIB_D) $(LD_LIB_D) $(MODELEXT_D) $(LD_EXTERN_STR_D)
+	$(shell mv *.o $(IMG_BASE_DIR)/Debug/ObjectCode 2>>/dev/null)
+	@echo '-o $@ $(ALL_OBJ_D)'> ld_d.tmp
+	@echo '--start-group $(LD_LIB_D) $(filter-out $(LD_LIB_BAN_D),$(LIB_D)) --end-group -Bstatic -EL --gc-sections -T $(LD_PATH_LDS_D) -L "$(libgcc_dir_el)" -L"$(libstdc_dir_el)" -lstdc++ -lgcc $(LDMAP_D)' >> ld_d.tmp
+	@echo "Linking ..."
+	@cat $(LD_EXTERN_STR_D) >> $(LD_PATH_LDS_D) \
+	&& echo Creating image $@ ... \
+	&& $(LD) @ld_d.tmp $(LOG_OPTION) \
+	&& $(OBJDUMP) -x -h -t $@ > $(MAP_D) \
+	&& $(NM) -n $@ > tmp_sym_d \
+	&& grep -v '\( [aNUw] \)\|\(__crc_\)\|\( \$[adt]\)' tmp_sym_d > $(SYM_D) \
+	&& rm -f tmp_sym_d \
+	&& rm -f ld_d.tmp
+
+$(BIN_D): $(IMAGE_D)
+ifeq "$(MULTI_REGIONS)" "ON"
+	@echo Creating executable $@ ... \
+	&& $(FE) --gap-fill=0xff -O binary $< $@ \
+	&& mv $(IMG_DEBUG)/SPECIAL_RO $(BIN_D)
+else
+	@echo Creating executable $@ ... \
+	&& $(FE) --gap-fill=0xff -O binary $< $@
+endif
+ifeq "$(LDS_MAP)" "ON"
+	@echo Generate LDS map file $(MAP2_D): ok
+endif
+ifeq "$(AXF_DIS)" "ON"
+	@echo Translate AXF $< to disassembly... \
+	&& $(OBJDUMP) -D $(IMAGE_D) > $(DASM_D)
+endif
+
+	@echo Encrypt binary file $@ ... \
+	&& $(EBIN) $(EBIN_METHOD) $(BIN_D) $(EBIN_BADDR) $(EBIN_MNAME) $(EBIN_PSTR)
+ifeq "$(FW_TYPE)" "FW_TYPE_COMPRESS"
+	@$(BFC) c lz $(BIN_D) tmp 0 0 -align\
+	&& cp -f tmp $(BIN_D) \
+	&& rm -f tmp
+else ifeq "$(FW_TYPE)" "FW_TYPE_PARTIAL_COMPRESS"
+	@$(BFC) c gz $(BIN_D) tmp 1 0x30C 0x168 0x178 0x16E $(EMBMEM_BLK_SIZE)\
+	&& cp -f tmp $(BIN_D) \
+	&& rm -f tmp
+else ifeq "$(FW_TYPE)" "FW_TYPE_LZMA"
+	@$(BFC) c lzma $(BIN_D) tmp 0 0 -align\
+	&& cp -f tmp $(BIN_D) \
+	&& rm -f tmp
+endif
+
+ifeq "$(COPY_BIN_2_STG)" "ON"
+ifneq "$(NVT_STG_PATH)" ""
+	@-echo Copy \""$(BIN_D)\"" to $(NVT_STG_PATH) ... \
+	&& cp -f -v $(BIN_D) $(NVT_STG_PATH)$(notdir $(BIN_D))
+endif
+ifneq "$(NVT_STG_PATH_MIPS2)" ""
+	@-echo Copy \""$(BIN_D)\"" to $(NVT_STG_PATH_MIPS2)_FWMIPS2.bin ... \
+	&& cp -f -v $(BIN_D) $(NVT_STG_PATH_MIPS2)_FWMIPS2.bin
+endif
+
+ifneq "$(NVT_STG_PATH_CA532)" ""
+	@-echo Copy \""$(BIN_D)\"" to $(NVT_STG_PATH_CA532)_FWCA532.bin ... \
+	&& cp -f -v $(BIN_D) $(NVT_STG_PATH_CA532)_FWCA532.bin
+endif
+endif
+
+#Please refer LD_DIR_WORKING_D for getting explanation. Ohters are in the same way.
+LD_DIR_WORKING_R= $(IMG_BASE_DIR)/Release/ObjectLds
+LD_EXTERN_STR_R = $(LD_DIR_WORKING_R)/extern.txt
+LD_REPLACE_LDS_R= $(shell mkdir -p $(LD_DIR_WORKING_R)) $(shell $(LD_REPLACE_VAR) > $(LD_DIR_WORKING_R)/replace.lds)
+LD_PATH_LDS_R   = $(LD_DIR_WORKING_R)/$(basename $(SCATTER))_R.lds
+LD_DFILE_R      = $(LD_REPLACE_LDS_R) $(shell echo $(LIB_R) > $(LD_DIR_WORKING_R)/libs.txt ) $(shell echo $(ALL_OBJ_R) > $(LD_DIR_WORKING_R)/objs.txt ) $(shell $(LDNVT) --lds-dst=$(LD_PATH_LDS_R) --lds-dir=$(LD_DIR_WORKING_R) --lds-src=$(LD_DIR_WORKING_R)/replace.lds --libs-src=$(LD_DIR_WORKING_R)/libs.txt --objs-src=$(LD_DIR_WORKING_R)/objs.txt --objs-dir=$(OBJ_RELEASE)) $(LD_DIR_WORKING_R)/ld_ext.d
+LD_LIB_R        = $(shell cat $(LD_DIR_WORKING_R)/ld_lib.txt 2>>/dev/null)
+LD_LIB_BAN_R    = $(shell cat $(LD_DIR_WORKING_R)/ld_lib_ban.txt 2>>/dev/null)
+
+ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),release build_pipe_R))
+include $(LD_DFILE_R)
+endif
+
+$(LD_LIB_R): $(MODELEXT_R)
+
+$(MODELEXT_R): $(LIB_MODELEXT_R)
+	@echo Creating modelext $@ \
+	&& rm -f $@ \
+	&& $(call append_modelext,modelext_info,$(OBJ_RELEASE),$<,$@) \
+	&& $(call append_modelext,bin_info,$(OBJ_RELEASE),$<,$@) \
+	&& $(call append_modelext,pinmux_cfg,$(OBJ_RELEASE),$<,$@) \
+	&& $(call append_modelext,intdir_cfg,$(OBJ_RELEASE),$<,$@) \
+	&& $(call append_modelext,emb_partition_info,$(OBJ_RELEASE),$<,$@) \
+	&& $(call append_modelext,gpio_info,$(OBJ_RELEASE),$<,$@)  \
+	&& $(call append_modelext,dram_partition_info,$(OBJ_RELEASE),$<,$@) \
+	&& $(call append_modelext,model_cfg,$(OBJ_RELEASE),$<,$@) \
+	&& $(EBIN) $(EBIN_METHOD) $@ 0x18 $(EBIN_MNAME)
+	@BIN_SIZE=`ls -l $@ | cut -d ' ' -f 5`; \
+	RESIDUAL=$$(($${BIN_SIZE} % 4)); \
+	if [ "$${RESIDUAL}" -ne "0" ]; then \
+		echo "sizeof($@) is not 4-byte aligned"; \
+		exit 1; \
+	fi
+
+$(LD_EXTERN_STR_R): $(LIB_R)
+	@echo make lds extern string ...
+	@echo $(LIB_R) > tmp_awk1
+	$(OBJDUMP) -h @tmp_awk1 | grep "\.version\.info" | sed 's/[^.]*\.version\.info\.[^\.]*\.\([^\ ]*\).*/\1_LIBRARY_VERSION_INFO/g' > tmp_awk2 \
+	&& echo "EXTERN(" >> $@ \
+	&& cat tmp_awk2 >> $@ \
+	&& echo ")" >> $@ \
+	&& rm tmp_awk1 \
+	&& rm tmp_awk2
+
+$(IMAGE_R): $(SRC) $(ASM) $(CPP_SRC) $(ALL_OBJ_R) $(LIB_R) $(LD_LIB_R) $(MODELEXT_R) $(LD_EXTERN_STR_R)
+	$(shell mv *.o $(IMG_BASE_DIR)/Release/ObjectCode 2>>/dev/null)
+	@echo '-o $@ $(ALL_OBJ_R) '> ld_r.tmp
+	@echo '--start-group $(LD_LIB_R) $(filter-out $(LD_LIB_BAN_R),$(LIB_R)) --end-group -Bstatic -EL --no-wchar-size-warning --gc-sections -T $(LD_PATH_LDS_R) -L"$(libgcc_dir_el)" -L"$(libstdc_dir_el)" -lstdc++ -lgcc "$(libm_path)" $(LDMAP_R)' >> ld_r.tmp
+	@echo "Linking ..."
+	@cat $(LD_EXTERN_STR_R) >> $(LD_PATH_LDS_R) \
+	&& echo Creating image $@ ... \
+	&& $(LD) @ld_r.tmp $(LOG_OPTION) \
+	&& $(OBJDUMP) -x -h -t $@ > $(MAP_R) \
+	&& $(NM) -n $@ > tmp_sym_r \
+	&& grep -v '\( [aNUw] \)\|\(__crc_\)\|\( \$[adt]\)' tmp_sym_r > $(SYM_R) \
+	&& rm -f tmp_sym_r \
+	&& rm -f ld_r.tmp
+
+$(BIN_R): $(IMAGE_R)
+ifeq "$(MULTI_REGIONS)" "ON"
+	@echo Creating executable $@ ... \
+	&& $(FE) --gap-fill=0xff -O binary $< $@ \
+	&& mv $(IMG_RELEASE)/SPECIAL_RO $(BIN_R)
+else
+	@echo Creating executable $@ ... \
+	&& $(FE) --gap-fill=0xff -O binary $< $@
+endif
+
+ifeq "$(LDS_MAP)" "ON"
+	@echo Generate LDS map file $(MAP2_R): ok
+endif
+ifeq "$(AXF_DIS)" "ON"
+	@echo Translate AXF $< to disassembly... \
+	&& $(OBJDUMP) -D $(IMAGE_R) > $(DASM_R)
+endif
+	@echo Encrypt binary file $@ ... \
+	&& $(EBIN) $(EBIN_METHOD) $(BIN_R) $(EBIN_BADDR) $(EBIN_MNAME) $(EBIN_PSTR)
+ifeq "$(FW_TYPE)" "FW_TYPE_COMPRESS"
+	@$(BFC) c lz $(BIN_R) tmp 0 0 -align\
+	&& cp -f tmp $(BIN_R) \
+	&& rm -f tmp
+else ifeq "$(FW_TYPE)" "FW_TYPE_PARTIAL_COMPRESS"
+	@$(BFC) c gz $(BIN_R) tmp 1 0x30C 0x168 0x178 0x16E $(EMBMEM_BLK_SIZE)\
+	&& cp -f tmp $(BIN_R) \
+	&& rm -f tmp
+else ifeq "$(FW_TYPE)" "FW_TYPE_LZMA"
+	@$(BFC) c lzma $(BIN_R) tmp 0 0 -align\
+	&& cp -f tmp $(BIN_R) \
+	&& rm -f tmp
+endif
+
+ifeq "$(COPY_BIN_2_STG)" "ON"
+ifneq "$(NVT_STG_PATH)" ""
+	@-echo Copy \""$(BIN_R)\"" to $(NVT_STG_PATH) ... \
+	&& cp -f -v $(BIN_R) $(NVT_STG_PATH)$(notdir $(BIN_R))
+endif
+ifneq "$(NVT_STG_PATH_MIPS2)" ""
+	@-echo Copy \""$(BIN_R)\"" to $(NVT_STG_PATH_MIPS2) ... \
+	&& cp -f -v $(BIN_R) $(NVT_STG_PATH_MIPS2)_FWMIPS2.bin
+endif
+
+ifneq "$(NVT_STG_PATH_CA532)" ""
+	@-echo Copy \""$(BIN_R)\"" to $(NVT_STG_PATH_CA532)_FWCA532.bin ... \
+	&& cp -f -v $(BIN_R) $(NVT_STG_PATH_CA532)_FWCA532.bin
+endif
+endif
+endif
+
+ifeq "$(ARCH)" "MIPS"
+
+$(IMAGE_D): $(SRC) $(ASM) $(CPP_SRC) $(ALL_OBJ_D) $(LIB_D)
+	@echo Linking ... \
+	&& echo Creating image $@ ... \
+	&& $(LD) -keep clk_chang* -o $@ $(ALL_OBJ_D) $(LIB_D) -info totals -map -scatter $(SCATTER) -list $(MAP_D) $(LOG_OPTION)
+
+$(BIN_D): $(IMAGE_D)
+ifeq "$(MULTI_REGIONS)" "ON"
+	@echo Creating executable $@ ... \
+	&& $(FE) -output $(IMG_DEBUG) -bin $< \
+	&& mv $(IMG_DEBUG)/SPECIAL_RO $(BIN_D)
+else
+	@echo Creating executable $@ ... \
+	&& $(FE) -output $@ -bin $<
+endif
+
+#----------------------------------------------------------------------
+# AXF to disassmebly code
+# Command Line:> make AXF_DIS="ON" release
+#----------------------------------------------------------------------
+ifeq "$(AXF_DIS)" "ON"
+	@echo Translate AXF $< to disassembly... \
+	&& $(FE) -c -s -o $(IMG_DEBUG)/outfile.lst $<
+endif
+	@echo Encrypt binary file $@ ... \
+	&& $(EBIN) $(EBIN_METHOD) $(BIN_D) $(EBIN_BADDR) $(EBIN_MNAME) $(EBIN_PSTR)
+
+ifeq "$(FW_TYPE)" "FW_TYPE_COMPRESS"
+	@$(BFC) c lz $(BIN_D) tmp 0 0 -align\
+	&& cp -f tmp $(BIN_D) \
+	&& rm -f tmp
+else ifeq "$(FW_TYPE)" "FW_TYPE_PARTIAL_COMPRESS"
+	@$(BFC) c gz $(BIN_D) tmp 1 0x30C 0x168 0x178 0x16E $(EMBMEM_BLK_SIZE)\
+	&& cp -f tmp $(BIN_D) \
+	&& rm -f tmp
+else ifeq "$(FW_TYPE)" "FW_TYPE_LZMA"
+	@$(BFC) c lzma $(BIN_D) tmp 0 0 -align\
+	&& cp -f tmp $(BIN_D) \
+	&& rm -f tmp
+endif
+
+ifeq "$(COPY_BIN_2_STG)" "ON"
+ifneq "$(NVT_STG_PATH)" ""
+	@-echo Copy \""$(BIN_D)\"" to $(NVT_STG_PATH) ... \
+	&& cp -f $(BIN_D) $(NVT_STG_PATH)$(notdir $(BIN_D))
+endif
+endif
+
+$(IMAGE_R): $(SRC) $(ASM) $(CPP_SRC) $(ALL_OBJ_R) $(LIB_R)
+	@echo Linking ... \
+	&& echo Creating image $@ ... \
+	&& $(LD) -keep clk_chang* -o $@ $(ALL_OBJ_R) $(LIB_R) -info sizes,totals -map -scatter $(SCATTER) -list $(MAP_R) $(LOG_OPTION)
+
+$(BIN_R): $(IMAGE_R)
+ifeq "$(MULTI_REGIONS)" "ON"
+	@echo Creating executable $@ ... \
+	&& $(FE) -output $(IMG_RELEASE) -bin $< \
+	&& mv $(IMG_RELEASE)/SPECIAL_RO $(BIN_R)
+else
+	@echo Creating executable $@ ... \
+	&& $(FE) -output $@ -bin $<
+endif
+
+#----------------------------------------------------------------------
+# AXF to disassmebly code
+# Command Line:> make AXF_DIS="ON" release
+#----------------------------------------------------------------------
+ifeq "$(AXF_DIS)" "ON"
+	@echo Translate AXF $< to disassembly... \
+	&& $(FE) -c -s -o $(IMG_RELEASE)/outfile.lst $<
+endif
+	@echo Encrypt binary file $@ ... \
+	&& $(EBIN) $(EBIN_METHOD) $(BIN_R) $(EBIN_BADDR) $(EBIN_MNAME) $(EBIN_PSTR)
+
+ifeq "$(FW_TYPE)" "FW_TYPE_COMPRESS"
+	@$(BFC) c lz $(BIN_R) tmp 0 0 -align\
+	&& cp -f tmp $(BIN_R) \
+	&& rm -f tmp
+else ifeq "$(FW_TYPE)" "FW_TYPE_PARTIAL_COMPRESS"
+	@$(BFC) c gz $(BIN_R) tmp 1 0x30C 0x168 0x178 0x16E $(EMBMEM_BLK_SIZE)\
+	&& cp -f tmp $(BIN_R) \
+	&& rm -f tmp
+else ifeq "$(FW_TYPE)" "FW_TYPE_LZMA"
+	@$(BFC) c lzma $(BIN_R) tmp 0 0 -align\
+	&& cp -f tmp $(BIN_R) \
+	&& rm -f tmp
+endif
+
+ifeq "$(COPY_BIN_2_STG)" "ON"
+ifneq "$(NVT_STG_PATH)" ""
+	@-echo Copy \""$(BIN_R)\"" to $(NVT_STG_PATH) ... \
+	&& cp -f $(BIN_R) $(NVT_STG_PATH)$(notdir $(BIN_R))
+endif
+endif
+endif
+	@cp $(BIN_R) $(IMG_RELEASE)/$(BIN_NAME_T).bin
+
+
+.PHONY:
+rm_log:
+ifeq "$(CLEAN_LOG)" "ON"
+	@-rm -f $(log_file)
+endif
+
+clean:
+	@-echo Clean $(basename $(notdir $(IMAGE_R))) ... \
+	&& rm -rf --no-preserve-root $(IMG_BASE_DIR) $(log_file) $(lint_file)
+
+ifeq "$(ISOLATE_DEP)" "ON"
+all: rm_log
+	@make dep
+	@make debug
+	@make release
+
+rebuild:
+	@make clean
+	@make dep
+	@make debug
+	@make release
+
+dep: build_DEP
+else
+rebuild: clean build_D build_R
+endif
+
+debug: rm_log make_debug_begin
+ifeq ($(OS),Linux)
+	$(MAKE) build_pipe_D
+else
+	$(MAKE) build_pipe_D $(JOB_FLAGS)
+endif
+
+release: rm_log make_release_begin
+ifeq ($(OS),Linux)
+	$(MAKE) build_pipe_R
+else
+	$(MAKE) build_pipe_R $(JOB_FLAGS)
+endif
+
+rm_lint_log:
+	@-rm -f $(lint_file)
+
+lint: rm_lint_log build_LINT
+
+option: make_option_begin
+
+lintclean:
+	@-echo Clean Lint $(basename $(notdir $(IMAGE_R))) checking data ... \
+	&& rm -rf --no-preserve-root $(LINT_DIR) $(lint_file)
+
+ice:
+	@-echo Modifying IceMode_D.bat ...
+	sed -i 's/\(^start sde\-insight[\=[:space:]_\.[:alnum:]\-]*\)\(\%CurrentDIR\%\/\).*/\\1\\2$(subst /,\/,$(IMAGE_D))/g' IceMode_D.bat
+	@-echo Modifying Debug_D.bat...
+	sed -i 's/\(^start sde\-insight[\=[:space:]_\.[:alnum:]\-]*\)\(\%CurrentDIR\%\/\).*/\\1\\2$(subst /,\/,$(IMAGE_D))/g' Debug_D.bat
+	@-echo Modifying IceMode_R.bat ...
+	sed -i 's/\(^start sde\-insight[\=[:space:]_\.[:alnum:]\-]*\)\(\%CurrentDIR\%\/\).*/\\1\\2$(subst /,\/,$(IMAGE_R))/g' IceMode_R.bat
+	@-echo Modifying Debug_R.bat ...
+	sed -i 's/\(^start sde\-insight[\=[:space:]_\.[:alnum:]\-]*\)\(\%CurrentDIR\%\/\).*/\\1\\2$(subst /,\/,$(IMAGE_R))/g' Debug_R.bat
+	@-echo Modifying LoadCode.ttl ...
+	sed -i 's/\(^sendln .\/\)[[:alnum:]\]*\.bin \(.*\)/\\1$(BIN_NAME).bin \\2/g' LoadCode.ttl
+	sed -i 's/\(^send .\/\)[[:alnum:]\]*_Data\(.*\)/\\1$(PRJ_NAME)_Data\\2/g' LoadCode.ttl

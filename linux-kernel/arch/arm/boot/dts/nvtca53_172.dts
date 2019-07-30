@@ -1,0 +1,739 @@
+/*
+ * Novatek Ltd. 72658
+ *
+ * Cortex-A53 MPCore
+ *
+ */
+
+/dts-v1/;
+#include "nvtca53_172.dtsi"
+#include "nvtca53_bsp.dtsi"
+
+/ {
+	chosen {
+		bootargs = __STR__(console=ttyS0,115200 earlyprintk maxcpus=4 no_console_suspend root=/dev/mmcblk0p18 KDUMP=16 SELP_PARAM _nvtca9-16m rootfstype=vdfs RO_PARAM init=/sbin/init mem=768M@48M mem=400M@2048M coherent_pool=1M vmalloc=300M rootwait ROOT_PARAM QUIET_PARAM TRACING_PARAM DO_NOT_TOUCH___RESERVED_SPACE_50b);
+
+		boot-modes = <&shift_s_mode>, <&normal_trace_mode>, <&shift_s_trace_mode>;
+	};
+
+	ntkaxis {
+		interrupts = <0x0 0x50 0x4>;
+	};
+
+	axi_slv_intr_1 {
+		interrupts = <0 81 4>;
+	};
+
+	AUD_TOP_DI{
+		interrupts = <0x0 0x2 0x4>;
+	};
+
+	AUD_TOP_DO{
+		interrupts = <0x0 0x0 0x4>;
+	};
+
+	AUD_KRU_0{
+		interrupts = <0x0 0x1a 0x4>;
+	};
+
+	AUD_KRU_1{
+		interrupts = <0x0 0x1b 0x4>;
+	};
+
+	AUD_HDMI_0{
+		interrupts = <0x0 0xb 0x4>;
+	};
+
+	AUD_HDMI_1{
+		interrupts = <0x0 0xc 0x4>;
+	};
+
+	CI_IRQ{
+		interrupts = <0x0 0x46 0x4>;
+	};
+
+	CRYPTO_IRQ{
+		interrupts = <0x0 0x14 0x4>;
+	};
+
+	NT.MPEG2IP.MAIN{
+		interrupts = <0 13 1>;
+	};
+
+	NT.MPEG2IP.SUB {
+		interrupts = <0 14 1>;
+	};
+
+	NT.FRE{
+		interrupts = <0 104 1>;
+	};
+
+	ntkdispage{
+		interrupts = <0x0 0x75 0x4>;
+	};
+
+	ntkgpu{
+		interrupts = <0x0 0xf 0x4>;
+	};
+
+	ntkhdma{
+		interrupts = <0x0 0x3e 0x4>;
+	};
+
+	ntkxdma{
+		interrupts = <0x0 0x4e 0x4>;
+	};
+
+	ntk_serial{
+		interrupts = <0x0 0x2D 0x4>;
+	};
+
+	NTBLAST{
+		interrupts = <0x0 0x48 0x4>;
+	};
+
+	NTCEC{
+		interrupts = <0x0 0x49 0x4>;
+	};
+
+	NTIPC{
+		interrupts = <0x0 0x32 0x4>;
+	};
+
+	PSBM{
+		interrupts = <0x0 0x73 0x4>;
+	};
+
+	TVENC{
+		interrupts = <0x0 0x4 0x4>;
+	};
+
+	IMVQ0{
+		interrupts = <0x0 0x5 0x4>;
+	};
+	IMVQ1 {
+		interrupts = <0 71 4>;
+	};
+	DpVsync{
+		interrupts = <0x0 0x17 0x4>;
+	};
+
+	Plane1-OsdVsync{
+		interrupts = <0x0 0xb 0x4>;
+	};
+
+	Plane2-OsdVsync{
+		interrupts = <0x0 0xc 0x4>;
+	};
+
+	Plane3-OsdVsync{
+		interrupts = <0x0 0xd 0x4>;
+	};
+
+	TconLed{
+		interrupts = <0x0 0xa 0x4>;
+	};
+
+	Ip0Vsync{
+		interrupts = <0x0 0x9 0x4>;
+	};
+    
+	Ip1Vsync{
+		interrupts = <0x0 0x1c 0x4>;
+	};
+
+	LbmNLine{
+		interrupts = <0x0 0x16 0x4>;
+	};
+
+	SubDpVsync{
+		interrupts = <0x0 0x15 0x4>;
+	};
+
+	PQHLine{
+		interrupts = <0x0 0x30 0x4>;
+	};
+
+	imvq-venc-h264{
+		interrupts = <0x0 0x76 0x4>;
+	};
+
+	imvq-venc-jpeg{
+		interrupts = <0x0 0x79 0x4>;
+	};
+
+	NTIRQ_TSMUX{
+		interrupts = <0x0 0x67 0x4>;
+	};
+
+	NTHDMI_A{
+		interrupts = <0x0 0x3a 0x4>;
+	};
+
+    NTHDMI_B {
+        interrupts = <0x0 0x3b 0x4>;
+    };
+    NTHDMI_C {
+        interrupts = <0x0 0x3c 0x4>;
+    };
+	NTHDMI_D {
+		interrupts = <0 61 4>;
+	};
+    axi.hdmi.0{
+        interrupts = <0x0 0xb 0x4>;
+    };
+    axi.hdmi.1{
+        interrupts = <0x0 0xc 0x4>;
+    };
+	NTMHL_CBUS{
+		interrupts = <0x0 0x8 0x4>;
+	};
+
+	Mali_GP{
+		interrupts = <0x0 0x20 0x4>;
+	};
+
+	Mali_GP_MMU{
+		interrupts = <0x0 0x21 0x4>;
+	};
+
+	Mali_PP0{
+		interrupts = <0x0 0x22 0x4>;
+	};
+
+	Mali_PP0_MMU{
+		interrupts = <0x0 0x23 0x4>;
+	};
+
+	Mali_PP1{
+		interrupts = <0x0 0x24 0x4>;
+	};
+
+	Mali_PP1_MMU{
+		interrupts = <0x0 0x25 0x4>;
+	};
+
+	Mali_PP2{
+		interrupts = <0x0 0x26 0x4>;
+	};
+
+	Mali_PP2_MMU{
+		interrupts = <0x0 0x27 0x4>;
+	};
+
+	Mali_PP3{
+		interrupts = <0x0 0x28 0x4>;
+	};
+
+	Mali_PP3_MMU{
+		interrupts = <0x0 0x29 0x4>;
+	};
+
+	TSP_IRQ{
+		interrupts = <0x0 0x7 0x4>;
+	};
+
+	DEMUX_IRQ{
+		interrupts = <0x0 0x3 0x4>;
+	};
+
+	NT_CPE{
+		interrupts = <0x0 0x1 0x4>;
+	};
+
+	PostDpVsync {
+		interrupts = <0 24 4>;
+	};
+
+	PQ_FRC {
+		interrupts = <0 83 4>;
+	};
+
+	gpioa: gpio@fd0f0000 {
+		compatible = "nvt,nt726xx-gpio";
+		reg = <0xfd0f0000 0x18>,
+		<0xfd0f0200 0x18>,
+		<0xfd100000 0x18>,
+		<0xfd110000 0x18>,
+		<0xfd110200 0x18>;
+		nvt,hwmods = "gpioa";
+		nvt,gpio-always-on;
+		gpio-controller;
+		#gpio-cells = <2>;
+		};
+
+  i2c0: i2c@fd000000 {
+    compatible = "nvt,nt726xx_i2c.0";
+    nvt,hwmods = "i2c0";
+    reg = <0xfd000000 0x100>;
+    interrupts = <0x0 0x43 0x4>;
+    clock-frequency = <400>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+  };
+
+  i2c1: i2c@fd000100 {
+    compatible = "nvt,nt726xx_i2c.1";
+    nvt,hwmods = "i2c1";
+    reg = <0xfd000100 0x100>;
+    interrupts = <0x0 0x43 0x4>;
+    clock-frequency = <400>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+        s24c512c@50 {
+                compatible = "sii,s24c512c";
+                reg = <0x50>;
+                samsung,eeprom-wp = <&gpioa 49 0>;
+        };
+  };
+
+  i2c2: i2c@fd000200 {
+    compatible = "nvt,nt726xx_i2c.2";
+    nvt,hwmods = "i2c2";
+    reg = <0xfd000200 0x100>;
+    interrupts = <0x0 0x43 0x4>;
+    clock-frequency = <400>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+	
+	tcon_start@01 {
+			compatible = "samsung,tztv-tcon-start";
+			/* don't use reg bellow */
+			/* dummy reg : 0x01, 0x02, 0x03, 0x04 */
+			reg = <0x01>;
+		};	
+		
+    /* panel 0xEC */
+	panel@76 {
+		compatible = "samsung,tztv-tcon3";
+		reg = <0x76>;
+		samsung,tcon-i2c-en = <&gpioa 52 0>;
+	};
+
+	/* panel 0xC0 */
+	panel@60 {
+		compatible = "samsung,tztv-tcon4";
+		reg = <0x60>;
+	};
+
+	/* panel 0xC2 */
+	panel@61 {
+		compatible = "samsung,tztv-tcon5";
+		reg = <0x61>;
+	};
+
+	/* panel 0xC4 */
+	panel@62 {
+		compatible = "samsung,tztv-tcon6";
+		reg = <0x62>;
+	};
+
+	/* panel 0xC6 */
+	panel@63 {
+		compatible = "samsung,tztv-tcon7";
+		reg = <0x63>;
+	};
+
+	/* panel 0x4E */
+	panel@27 {
+		compatible = "samsung,tztv-tcon8";
+		reg = <0x27>;
+	};
+
+	/* panel 0x9E */
+	panel@4F {
+		compatible = "samsung,tztv-tcon9";
+		reg = <0x4F>;
+	};
+
+	/* panel 0x46 */
+	panel@23 {
+		compatible = "samsung,tztv-tcon10";
+		reg = <0x23>;
+	};
+
+	/* panel 0x50 */
+	panel@28 {
+		compatible = "samsung,tztv-tcon11";
+		reg = <0x28>;
+	};
+
+	/* panel 0xB4 */
+	panel@5A {
+		compatible = "samsung,tztv-tcon12";
+		reg = <0x5A>;
+	};
+
+	/* panel 0xB6 */
+	panel@5B {
+		compatible = "samsung,tztv-tcon13";
+		reg = <0x5B>;
+	};
+
+	/* panel 0x7C */
+	panel@3E {
+		compatible = "samsung,tztv-tcon14";
+		reg = <0x3E>;
+	};
+
+	/* panel 0x7E */
+	panel@3F {
+		compatible = "samsung,tztv-tcon15";
+		reg = <0x3F>;
+	};
+
+	/* panel 0x80 */
+	panel@40 {
+		compatible = "samsung,tztv-tcon16";
+		reg = <0x40>;
+	};
+
+	/* panel 0x82 */
+	panel@41 {
+		compatible = "samsung,tztv-tcon17";
+		reg = <0x41>;
+	};
+
+	/* panel 0xC8 */
+	panel@64 {
+		compatible = "samsung,tztv-tcon20";
+		reg = <0x64>;
+	};
+
+	/* panel 0xE8 */
+	panel@74 {
+		compatible = "samsung,tztv-tcon21";
+		reg = <0x74>;
+	};
+
+	/* panel 0xA0 */
+	panel@50 {
+		compatible = "samsung,tztv-tcon22";
+		reg = <0x50>;
+	};
+
+	/* panel 0xA4 */
+	panel@52 {
+		compatible = "samsung,tztv-tcon23";
+		reg = <0x52>;
+	};
+
+	/* panel 0xA8 */
+	panel@54 {
+		compatible = "samsung,tztv-tcon24";
+		reg = <0x54>;
+	};
+
+	/* panel 0xAC */
+	panel@56 {
+		compatible = "samsung,tztv-tcon25";
+		reg = <0x56>;
+	};
+
+	/* panel 0xAE */
+	panel@57 {
+		compatible = "samsung,tztv-tcon26";
+		reg = <0x57>;
+	};
+
+	/* panel 0x00 */
+	panel@00 {
+		compatible = "samsung,tztv-tcon27";
+		reg = <0x00>;
+	};
+
+	/* panel 0xF0 */
+	panel@78 {
+		compatible = "samsung,tztv-tcon28";
+		reg = <0x78>;
+	};
+
+	/* panel 0x40 */
+	panel@20 {
+		compatible = "samsung,tztv-tcon30";
+		reg = <0x20>;
+	};
+
+	/* panel 0x66 */
+	panel@33 {
+		compatible = "samsung,tztv-tcon31";
+		reg = <0x33>;
+	};
+
+	/* panel 0xA2 */
+		panel@51 {
+			compatible = "samsung,tztv-tcon32";
+			reg = <0x51>;
+		};
+
+	/* panel 0xDE */
+	panel@6F {
+		compatible = "samsung,tztv-frc-hawkg-main";
+		reg = <0x6F>;
+	};
+
+	/* panel 0xDA */
+	panel@6D {
+		compatible = "samsung,tztv-frc-hawkg-sub";
+		reg = <0x6D>;
+	};
+	
+	tcon-end@02 {
+			compatible = "samsung,tztv-tcon-end";
+			/* don't use reg bellow */
+			/* dummy reg : 0x01, 0x02, 0x03, 0x04 */
+			reg = <0x02>;
+		};
+
+  };
+
+  i2c3: i2c@fd000300 {
+    compatible = "nvt,nt726xx_i2c.3";
+    nvt,hwmods = "i2c3";
+    reg = <0xfd000300 0x100>;
+    interrupts = <0x0 0x43 0x4>;
+    clock-frequency = <400>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+	
+	frc-start@03 {
+			compatible = "samsung,tztv-frc-start";
+			/* don't use reg bellow */
+			/* dummy reg : 0x01, 0x02, 0x03, 0x04 */
+			reg = <0x03>;
+		};
+			
+    /* panel 0x90 */
+	panel@48 {
+		compatible = "samsung,tztv-tcon1";
+		reg = <0x48>;
+	};
+
+	/* panel 0x94 */
+	panel@4A {
+		compatible = "samsung,tztv-tcon2";
+		reg = <0x4A>;
+	};
+
+	/* panel 0xE0 */
+	panel@70 {
+		compatible = "samsung,tztv-tcon18";
+		reg = <0x70>;
+	};
+
+	/* panel 0xE2 */
+	panel@71 {
+		compatible = "samsung,tztv-tcon19";
+		reg = <0x71>;
+	};
+
+	/* panel 0xEC DUAL */
+	panel@76 {
+		compatible = "samsung,tztv-tcon29";
+		reg = <0x76>;
+	};
+
+	/* panel C8 */
+	panel@64 {
+		compatible = "samsung,tztv-frc-sdp-main";
+		reg = <0x64>;
+		samsung,sw-pvcc = <&gpioa 50 0>;
+	};
+
+	/* panel C0 SUB */
+	panel@60 {
+		compatible = "samsung,tztv-frc-sdp-sub1";
+		reg = <0x60>;
+	};
+
+	/* panel C2 SUB */
+	panel@61 {
+		compatible = "samsung,tztv-frc-sdp-sub2";
+		 reg = <0x61>;
+	};
+
+	/* panel 34 */
+	panel@1A {
+		compatible = "samsung,tztv-frc-nvt-main";
+		 reg = <0x1A>;
+		 samsung,sw-pvcc = <&gpioa 50 0>;
+	};
+	
+	frc-end@04 {
+			compatible = "samsung,tztv-frc-end";
+			/* don't use reg bellow */
+			/* dummy reg : 0x01, 0x02, 0x03, 0x04 */
+			reg = <0x04>;
+		};
+	
+  };
+  
+  i2c4: i2c@fd000400 {
+    compatible = "nvt,nt726xx_i2c.4";
+    nvt,hwmods = "i2c4";
+    reg = <0xfd000400 0x100>;
+    interrupts = <0x0 0x43 0x4>;
+    clock-frequency = <400>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+	tas5747@22 {
+			compatible = "tas,tas5747";
+			reg = <0x22>;
+			amp_nt16_m
+			{
+				amp_tw_bus = <4>;
+				amp_tw_slave_addr = <0x44>;
+				amp_wf_bus = <4>;
+				amp_wf_slave_addr = <0x46>;
+				amp_bt_bus = <0>;
+				amp_bt_slave_addr = <0>;
+				amp_tp_bus = <0>;
+				amp_tp_slave_addr = <0>;
+			};
+	};
+  };
+
+  i2c5: i2c@fd000500 {
+    compatible = "nvt,nt726xx_i2c.5";
+    nvt,hwmods = "i2c5";
+    reg = <0xfd000500 0x100>;
+    interrupts = <0x0 0x43 0x4>;
+    clock-frequency = <400>;
+    #address-cells = <1>;
+    #size-cells = <0>;
+  };
+	
+	
+	usben {
+                 compatible = "samsung,nvt-usben";
+                 status = "okay";
+                 samsung,usb-enable = <&gpioa 44 0>;
+                 samsung,usb-don-enable = <&gpioa 45 0>;
+         };
+		 
+	tztv_tuner {
+		compatible = "samsung,tztv-tuner";
+		tuner-list-atsc = <&tuner_list_atsc>;
+		tuner-list-dvb = <&tuner_list_dvb>;
+		tuner-list-isdb = <&tuner_list_isdb>;
+		tuner-list-ew = <&tuner_list_ew>;
+		tuner-list-cn = <&tuner_list_cn>;
+		
+		tuner_i2c_bus = <0>;
+		tuner_reset_gpio = <0x0c06>;
+		lnb_slave_addr = <0x10>;
+		
+		tuner_list_atsc:tuner-list-atsc {};
+		tuner_list_dvb:tuner-list-dvb {};
+		tuner_list_isdb:tuner-list-isdb {};
+		tuner_list_ew:tuner-list-ew {};
+		tuner_list_cn:tuner-list-cn {};
+	};
+
+	tztv_jackident {
+		compatible = "samsung,tztv-jackident";
+		samsung,hp-jackident = <&gpioa 51 0>;
+		samsung,av1-jackident = <&gpioa 7  0>;
+		samsung,comp1-jackident = <&gpioa 8 0>;
+	};
+
+	tztv_kfactory {
+		compatible = "samsung,tztv-kfactory";
+		samsung,sw-pvcc = <&gpioa 50 0>;
+		samsung,usb_enable = <&gpioa 44 0>;
+		samsung,usb_don_enable = <&gpioa 36 0>;
+	};
+
+	tztv_bootmode@B {
+		compatible = "tztv-bootmode";
+		reg = <0xB>;
+		communication-mode = "reg";
+		ew-select = <0xfc040124>;
+	};
+
+	tztv-micom {
+		compatible = "samsung,uart-micom";
+		status = "okay";
+	};
+
+	memory_tbl {
+		#region-cells = <0x2>;
+		secure_os {	region = <0x00000000 0x2500000>;	protect = "enable";	cma = "disable";};
+		vbi {		region = <0x02500000 0x40000>;	protect = "disable";	cma = "disable";};
+		encrypt {	region = <0x02540000 0x40000>;	protect = "enable";	cma = "disable";};
+		isdb_buffer { region = <0x02580000 0x700000>;	protect = "enable";	cma = "disable";};
+		encoder_n{	region = <0x02C80000 0x100000>;	protect = "disable";	cma = "disable";};
+		encoder_s{	region = <0x02D80000 0x280000>;	protect = "disable";	cma = "disable";};
+		kernel_part1 {region = <0x03000000 0x31F00000>;	protect = "enable";	cma = "disable";};
+		va {		region = <0x34F00000 0x200000>;	protect = "disable";	cma = "disable";};
+		demux {		region = <0x35100000 0x1F00000>;	protect = "enable";	cma = "disable";};
+		sbm {		region = <0x35100000 0x1F00000>;	protect = "enable";	cma = "disable";};
+		sw_decoder {region = <0x37000000 0x1200000>;	protect = "enable";	cma = "disable";};
+		dtv {		region = <0x38200000 0x3F00000>;	protect = "enable";	cma = "disable";};
+		osd {		region = <0x3D600000 0x2A00000>;	protect = "disable";	cma = "disable";};
+		kernel_part2 {region = <0x80000000 0x19000000>;	protect = "enable";	cma = "disable";};	
+		atv {		region = <0x99000000 0x5480000>;	protect = "enable";	cma = "disable";};		
+		aud {		region = <0x9E480000 0x800000>;	protect = "enable";	cma = "disable";};
+		dsp {		region = <0x9ED80000 0xC00000>;	protect = "enable";	cma = "disable";};
+		dtv_aud {	region = <0x9FA00000 0x100000>;	protect = "enable";	cma = "disable";};
+		mm_aud {	region = <0x9FB00000 0x280000>;	protect = "enable";	cma = "disable";};
+		pq_frc {	region = <0x9FD80000 0x200000>;	protect = "enable";	cma = "disable";};
+		emegerency_buffer {region = <0x9FF80000 0x80000>;	protect = "enable";	cma = "disable";};
+	};
+
+	aud_config_tbl {
+		/*memory correlation*/
+		echo_on              { u32ConfVal = <0>;         };     /*VA_DTB_NODE_NAME_ECHO_ON*/
+		sup_dual_uniplayer   { u32ConfVal = <0>;         };     /*VA_DTB_NODE_NAME_SUP_DUAL_UNIPLAYER*/
+		virt_opu_num         { u32ConfVal = <5>;         };     /*VA_DTB_NODE_NAME_VIRT_OPU_NUM*/
+		sup_multi_ch         { u32ConfVal = <2>;         };     /*VA_DTB_NODE_NAME_SUP_MULTI_CH*/ /*(0:VA_MULTI_CH_NONE, 1:VA_MULTI_CH_MS11, 2:VA_MULTI_CH_MS12)*/
+		sup_enc_effect_snd   { u32ConfVal = <1>;         };     /*VA_DTB_NODE_NAME_SP_ENC_EFFECT_SND*/
+		/*ipuaxi_bufsizex2   { u32ConfVal = <0>;         };*/   /*VA_DTB_NODE_NAME_IPUAXI_BUFSIZEX2*/
+		sup_capture          { u32ConfVal = <1>;         };     /*VA_DTB_NODE_NAME_SP_CAPTURE*/
+
+		/*funtion config correlation*/
+		/*fastboot           { u32ConfVal = <1>;         };*/   /*VA_DTB_NODE_NAME_FASTBOOT*/
+		/*multi_stc          { u32ConfVal = <1>;         };*/   /*VA_DTB_NODE_NAME_MULTI_STC*/
+		/*dual_dtv           { u32ConfVal = <1>;         };*/   /*VA_DTB_NODE_NAME_DUAL_DTV*/
+		/*pre_pp             { u32ConfVal = <1>;         };*/   /*VA_DTB_NODE_NAME_PRE_PP*/
+		/*sup_dsp_monitor    { u32ConfVal = <1>;         };*/   /*VA_DTB_NODE_NAME_SP_DSP_MONITOR*/
+		/*sup_asbm           { u32ConfVal = <1>;         };*/   /*VA_DTB_NODE_NAME_SP_ASBM*/
+		/*spdif_autoswitch   { u32ConfVal = <0>;         };*/   /*VA_DTB_NODE_NAME_SPDIF_AUTOSWITCH*/
+		/*tsunami_mode       { u32ConfVal = <1>;         };*/   /*VA_DTB_NODE_NAME_TSUNAMI_MODE*/
+
+		/*value setting correlation*/
+		/*adc_setting        { u32ConfVal = <3>;         };*/   /*VA_DTB_NODE_NAME_ADC_SETTING*/
+		/*dac_setting        { u32ConfVal = <2>;         };*/   /*VA_DTB_NODE_NAME_DAC_SETTING*/
+		/*dac1_mode_sel      { u32ConfVal = <0>;         };*/   /*VA_DTB_NODE_NAME_DAC1_MODE_SELECT*/ /*(0:VA_128FS, 1:VA_256FS)*/
+		/*dac2_mode_sel      { u32ConfVal = <0>;         };*/   /*VA_DTB_NODE_NAME_DAC2_MODE_SELECT*/ /*(0:VA_128FS, 1:VA_256FS)*/
+
+		/*alsa fake card*/
+		/*fake_card0         { u32ConfVal = <0xFFFFFFFF>;};*/   /*VA_DTB_NODE_NAME_FAKE_CARD0*/
+		/*fake_card1         { u32ConfVal = <0xFFFFFFFF>;};*/   /*VA_DTB_NODE_NAME_FAKE_CARD1*/
+		/*fake_card2         { u32ConfVal = <0xFFFFFFFF>;};*/   /*VA_DTB_NODE_NAME_FAKE_CARD2*/
+
+		project_info{ ac8Project = "Tizen3"; ac8IC = "NT72172"; ac8Version = "AUD_CONF_0.0.001"; ac8Date = "20160831"; };
+	};
+
+	demux_tbl {
+		Video_0                           {region = <0x00000000 0x00800000>;};
+		Video_1                           {region = <0x00800000 0x00800000>;};
+		Audio_0                           {region = <0x01000000 0x00040000>;};
+		Audio_1                           {region = <0x01040000 0x00040000>;};
+		Audio_2                           {region = <0x01080000 0x00040000>;};
+		Audio_3                           {region = <0x010C0000 0x00040000>;};
+		Others                           {region = <0x01100000 0x00300000>;};
+		PVR_0_Record                {region = <0x01400000 0x00600000>;};
+		PVR_0_Playback             {region = <0x01A00000 0x00500000>;};
+    };
+	va_tbl {
+		va_0 {region = <0x00000000 0x100000>;};
+		va_1 {region = <0x00100000 0x100000>;};
+	};
+	dtv_tbl {
+		dtv_0 {region = <0x00000000 0xA580000>;};
+	};
+	extra_tbl {
+		dtv_0 {region = <0xA580000 0x3200000>;};
+	};
+};

@@ -1,0 +1,199 @@
+#----------------------------------------------------------------------
+# get the source full path, convert upper case extension to lower case
+#----------------------------------------------------------------------
+ifeq "$(shell uname)" "Linux"
+SRC := $(addprefix $(shell pwd)/, $(SRC:.C=.c))
+ASM := $(addprefix $(shell pwd)/, $(ASM:.s=.S))
+CPP_SRC := $(addprefix $(shell pwd)/, $(CPP_SRC:.CPP=.cpp))
+else
+SRC := $(addprefix $(shell cygpath --mixed $(shell pwd))/, $(SRC:.C=.c))
+ASM := $(addprefix $(shell cygpath --mixed $(shell pwd))/, $(ASM:.s=.S))
+CPP_SRC := $(addprefix $(shell cygpath --mixed $(shell pwd))/, $(CPP_SRC:.CPP=.cpp))
+endif
+
+#----------------------------------------------------------------------
+# set the basic include directories
+#----------------------------------------------------------------------
+# Get working directory
+MYPWD       := $(shell pwd)
+ALG_PATH    := $(findstring /Alg/, $(MYPWD))
+APP_PATH    := $(findstring /App/, $(MYPWD))
+APPEXT_PATH := $(findstring /AppExt/, $(MYPWD))
+LIB_PATH    := $(findstring /Lib/, $(MYPWD))
+LIBEXT_PATH := $(findstring /LibExt/, $(MYPWD))
+DAL_PATH    := $(findstring /dal/, $(MYPWD))
+DRV_PATH    := $(findstring /Drv/, $(MYPWD))
+DRVEXT_PATH := $(findstring /DrvExt/, $(MYPWD))
+COM_PATH    := $(findstring /Common/, $(MYPWD))
+UTIL_PATH   := $(findstring /Common/Common_src/Utility, $(MYPWD))
+PRJ_PATH    := $(shell find ./ -maxdepth 1 -name MakeConfig.txt)
+LIBC_PATH   := $(findstring /Common/Common_src/LibC, $(MYPWD))
+
+BASE_INC_DIR    := $(filter %../../Include, $(INC_DIR))
+APPEXT_INC_DIR  := -I$(BASE_INC_DIR)/AppExt
+APP_INC_DIR     := -I$(BASE_INC_DIR)/App
+LIBEXT_INC_DIR  := -I$(BASE_INC_DIR)/LibExt
+LIB_INC_DIR     := -I$(BASE_INC_DIR)/Lib
+DAL_INC_DIR     := -I$(BASE_INC_DIR)/dal
+DRVEXT_INC_DIR  := -I$(BASE_INC_DIR)/DrvExt
+DRV_INC_DIR     := -I$(BASE_INC_DIR)/Drv
+LIBC_INC_DIR    := -I$(BASE_INC_DIR)/Common/LibC
+
+BASE_INC_ALG_DIR     := $(BASE_INC_DIR)/../Alg/Include
+BASE_INC_PROTECT_DIR := $(subst Include,IncludeProtected,$(BASE_INC_DIR))
+
+#change replace /Include/ to /IncludeProtected/
+define protected
+$(subst ../../Include/,../../IncludeProtected/,$1)
+endef
+
+
+ifeq "$(USE_ECOS_KERNEL)" "ON"
+#eCos include path like ThirdParty/eCos/Include ThirdParty/live555/Include
+ECOS_INC_DIR := $(addprefix -I,$(addsuffix /include, $(shell find $(BASE_INC_DIR)/../ThirdParty/ -maxdepth 1 -mindepth 1 -type d)))
+endif
+
+ifeq "$(shell uname)" "Linux"
+INC_DIR := $(addprefix -I, $(sort $(dir $(shell find $(INC_DIR) -name '*.h'))))
+#Include_Protected excludes DemoKit and ModelExt
+ifneq ($(PRJ_NAME), DemoKit)
+ifneq (DrvExt_src/ModelExt, $(findstring DrvExt_src/ModelExt, $(MYPWD)))
+INC_DIR += $(addprefix -I, $(sort $(dir $(shell find $(BASE_INC_PROTECT_DIR) -name '*.h'))))
+endif
+endif
+INC_DIR += $(addprefix -I, $(sort $(dir $(shell find $(BASE_INC_ALG_DIR) -name '*.h'))))
+else
+INC_DIR := $(addprefix -I, $(sort $(dir $(shell find $(INC_DIR) -name \'\*\.h\'))))
+#Include_Protected excludes DemoKit and ModelExt
+ifneq ($(PRJ_NAME), DemoKit)
+ifneq (DrvExt_src/ModelExt, $(findstring DrvExt_src/ModelExt, $(MYPWD)))
+INC_DIR += $(addprefix -I, $(sort $(dir $(shell find $(BASE_INC_PROTECT_DIR) -name \'\*\.h\'))))
+endif
+endif
+INC_DIR += $(addprefix -I, $(sort $(dir $(shell find $(BASE_INC_ALG_DIR) -name \'\*\.h\'))))
+endif
+
+# For uITRON (MIPS) platform, we use proprietary standard C library.
+# We must filter out proprietary header file if we are in others platform (ARM or eCos...)
+# Filter out standard C library header file
+# ifeq "$(ARCH)" "ARM"
+# INC_DIR := $(filter-out $(LIBC_INC_DIR)/%, $(INC_DIR))
+# endif
+
+ifeq "$(USE_ECOS_KERNEL)" "ON"
+    INC_DIR := $(filter-out $(LIBC_INC_DIR)/%, $(INC_DIR))
+    INC_DIR += $(ECOS_INC_DIR)
+endif
+
+ifeq "$(INCLUDE_RULE)" "ON"
+
+#----------------------------------------------------------------------
+# Filter out upper layer's include path
+#----------------------------------------------------------------------
+
+
+# /Common can't access /App or /AppExt or /Lib or /LibExt or /Drv or /DrvExt or /dal
+# except: /Common/Common_src/Utility can access /Drv
+ifneq "$(COM_PATH)" ""
+ifneq "$(UTIL_PATH)" ""
+INC_DIR := $(filter-out $(APPEXT_INC_DIR)% $(APP_INC_DIR)% $(LIBEXT_INC_DIR)% $(LIB_INC_DIR)% $(DRVEXT_INC_DIR)% $(DAL_INC_DIR)%, $(INC_DIR))
+INC_DIR := $(filter-out $(call protected,$(APPEXT_INC_DIR)%) $(call protected, $(APP_INC_DIR)%) $(call protected,$(LIBEXT_INC_DIR)%) $(call protected,$(LIB_INC_DIR)%) $(call protected,$(DRVEXT_INC_DIR)%) $(call protected,$(DAL_INC_DIR)%),$(INC_DIR))
+else ifneq "$(LIBC_PATH)" ""
+INC_DIR := $(filter-out $(APPEXT_INC_DIR)% $(APP_INC_DIR)% $(LIBEXT_INC_DIR)% $(LIB_INC_DIR)% $(DRVEXT_INC_DIR)% $(DAL_INC_DIR)%, $(INC_DIR))
+INC_DIR := $(filter-out $(call protected,$(APPEXT_INC_DIR)%) $(call protected, $(APP_INC_DIR)%) $(call protected,$(LIBEXT_INC_DIR)%) $(call protected,$(LIB_INC_DIR)%) $(call protected,$(DRVEXT_INC_DIR)%) $(call protected,$(DAL_INC_DIR)%),$(INC_DIR))
+else
+INC_DIR := $(filter-out $(APPEXT_INC_DIR)% $(APP_INC_DIR)% $(LIBEXT_INC_DIR)% $(LIB_INC_DIR)% $(DRVEXT_INC_DIR)% $(DRV_INC_DIR)%, $(INC_DIR))
+INC_DIR := $(filter-out $(call protected,$(APPEXT_INC_DIR)%) $(call protected, $(APP_INC_DIR)%) $(call protected,$(LIBEXT_INC_DIR)%) $(call protected,$(LIB_INC_DIR)%) $(call protected,$(DRVEXT_INC_DIR)%) $(call protected,$(DRV_INC_DIR)%) $(call protected,$(DAL_INC_DIR)%),$(INC_DIR))
+endif
+endif
+
+# /Drv can't access /App or /AppExt or /Lib or /LibExt or /dal
+ifneq "$(DRV_PATH)" ""
+INC_DIR := $(filter-out $(APPEXT_INC_DIR)% $(APP_INC_DIR)% $(LIBEXT_INC_DIR)% $(LIB_INC_DIR)% $(DAL_INC_DIR)%, $(INC_DIR))
+INC_DIR := $(filter-out $(call protected,$(APPEXT_INC_DIR)%) $(call protected, $(APP_INC_DIR)%) $(call protected,$(LIBEXT_INC_DIR)%) $(call protected,$(LIB_INC_DIR)%) $(call protected,$(DAL_INC_DIR)%),$(INC_DIR))
+endif
+
+# /DrvExt can't access /App or /AppExt or /Lib or /LibExt or /dal
+ifneq "$(DRVEXT_PATH)" ""
+INC_DIR := $(filter-out $(APPEXT_INC_DIR)% $(APP_INC_DIR)% $(LIBEXT_INC_DIR)% $(LIB_INC_DIR)% $(DAL_INC_DIR)%, $(INC_DIR))
+INC_DIR := $(filter-out $(call protected,$(APPEXT_INC_DIR)%) $(call protected,$(APP_INC_DIR)%) $(call protected,$(LIBEXT_INC_DIR)%) $(call protected,$(LIB_INC_DIR)%) $(call protected,$(DAL_INC_DIR)%), $(INC_DIR))
+endif
+
+# /dal can't access /App or /AppExt or /Lib or /LibExt
+ifneq "$(DAL_PATH)" ""
+INC_DIR := $(filter-out $(APPEXT_INC_DIR)% $(APP_INC_DIR)% $(LIBEXT_INC_DIR)% $(LIB_INC_DIR)%, $(INC_DIR))
+INC_DIR := $(filter-out $(call protected,$(APPEXT_INC_DIR)%) $(call protected,$(APP_INC_DIR)%) $(call protected,$(LIBEXT_INC_DIR)%) $(call protected,$(LIB_INC_DIR)%), $(INC_DIR))
+endif
+
+# /Lib can't access /App or /AppExt
+ifneq "$(LIB_PATH)" ""
+INC_DIR := $(filter-out $(APPEXT_INC_DIR)% $(APP_INC_DIR)%, $(INC_DIR))
+INC_DIR := $(filter-out $(call protected,$(APPEXT_INC_DIR)%) $(call protected,$(APP_INC_DIR)%), $(INC_DIR))
+endif
+
+# /LibExt can't access /App or /AppExt
+ifneq "$(LIBEXT_PATH)" ""
+INC_DIR := $(filter-out $(APPEXT_INC_DIR)% $(APP_INC_DIR)%, $(INC_DIR))
+INC_DIR := $(filter-out $(call protected,$(APPEXT_INC_DIR)%) $(call protected,$(APP_INC_DIR)%), $(INC_DIR))
+endif
+
+#----------------------------------------------------------------------
+# Filter out under layer's include path
+#----------------------------------------------------------------------
+
+# /App can't access /Drv
+#ifneq "$(APP_PATH)" ""
+#INC_DIR := $(filter-out $(DRV_INC_DIR)%, $(INC_DIR))
+#endif
+
+# /App can't access /DrvExt or /LibExt
+ifneq "$(APP_PATH)" ""
+INC_DIR := $(filter-out $(DRVEXT_INC_DIR)% $(LIBEXT_INC_DIR)%, $(INC_DIR))
+endif
+
+# /AppExt can't access /Drv
+#ifneq "$(APPEXT_PATH)" ""
+#INC_DIR := $(filter-out $(DRV_INC_DIR)%, $(INC_DIR))
+#endif
+
+# /Lib can't access /DrvExt
+ifneq "$(LIB_PATH)" ""
+INC_DIR := $(filter-out $(DRVEXT_INC_DIR)%, $(INC_DIR))
+endif
+
+# /Prj can't access /Drv or /DrvExt
+#ifneq "$(PRJ_PATH)" ""
+#INC_DIR := $(filter-out $(DRVEXT_INC_DIR)% $(DRV_INC_DIR)%, $(INC_DIR))
+#endif
+
+ifneq "$(UI_STYLE)" ""
+ifeq ($(filter $(UI_STYLE), $(UI_STYLE_ALL)),)
+$(error add your style into $$UI_STYLE_ALL in MakeConfig.txt)
+else
+PRJ_FILT_OUT := $(filter-out  $(UI_STYLE), $(UI_STYLE_ALL))
+endif
+PRJ_FILT_OUT_DIR := $(addsuffix %,$(addprefix -I./SrcCode/UIWnd/, $(subst UI_STYLE_,,$(PRJ_FILT_OUT))))
+#INC_DIR := $(shell echo $(INC_DIR)|tr a-z A-Z)
+INC_DIR := $(filter-out $(PRJ_FILT_OUT_DIR) , $(INC_DIR))
+endif
+
+#----------------------------------------------------------------------
+# Filter out external layer's include path
+#----------------------------------------------------------------------
+
+# /Drv can't access /DrvExt
+ifneq "$(DRV_PATH)" ""
+INC_DIR := $(filter-out $(DRVEXT_INC_DIR)%, $(INC_DIR))
+endif
+
+# /Lib can't access /LibExt
+ifneq "$(LIB_PATH)" ""
+INC_DIR := $(filter-out $(LIBEXT_INC_DIR)%, $(INC_DIR))
+endif
+
+# /App can't access /AppExt
+ifneq "$(APP_PATH)" ""
+INC_DIR := $(filter-out $(APPEXT_INC_DIR)%, $(INC_DIR))
+endif
+
+endif

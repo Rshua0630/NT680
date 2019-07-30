@@ -1,0 +1,25 @@
+Novatek reset driver
+-------------------
+
+novatek SoC reset driver
+
+Required properties:
+- compatible : "nvt,nvtsoc-reset";
+- compatible : "nvt,nvtsoc-shutdown";
+- compatible : "nvt,nvtsoc-reboot";
+
+
+Examples:
+        reset@0 {
+	                compatible = "nvt,nvtsoc-reset";
+	        };
+
+        shutdown@0 {
+	                compatible = "nvt,nvtsoc-shutdown";
+	        };
+
+        reboot@0 {
+	                compatible = "nvt,nvtsoc-reboot";
+	        };
+
+

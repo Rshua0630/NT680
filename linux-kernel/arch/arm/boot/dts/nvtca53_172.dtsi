@@ -1,0 +1,108 @@
+/*
+ * Copyright (C) 2014 Samsung Electronics Co.Ltd
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+/*
+ * Here we define common kernel booting arguments and modes, which can be
+ * substituded in main sdp dts configurations or 'bootargs' property of
+ * special 'chosen' node of flattened device tree.
+ *                                                   - roman.pen
+ */
+
+#ifndef NVT_BOOTARGS_DTSI
+#define NVT_BOOTARGS_DTSI
+
+#ifndef __STR__
+#define ___STR__(...) #__VA_ARGS__
+#define __STR__(...) ___STR__(__VA_ARGS__)
+#endif
+
+/* We always want to have some reserved space in cmdline for doing proper
+ * substition.  Also here we start our preallocated space with '0', so
+ * kernel will never see this reserved space, cmdline will be pretty as
+ * usual.
+ *
+ * NOTE: of course this reserved space should be at the end of the cmdline,
+ *       or everything will be broken.
+ */
+#define DO_NOT_TOUCH___RESERVED_SPACE_50b \
+        \x00\
+        \x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\
+        \x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\
+        \x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\
+        \x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\
+        \x20\x20\x20\x20\x20\x20\x20\x20\x20\x20
+
+#define TRACING_STR trace_event=early_event,user
+
+#ifdef QA_IMAGE
+#define RO_PARAM ro
+#else
+#define RO_PARAM rw
+#endif
+
+/* Orsay case */
+#if defined(VD_RELEASE_DTB) ||			\
+/* Tizen case */						\
+    defined(RELEASE_MODE_release)  || defined(RELEASE_MODE_perf)
+#define QUIET_PARAM quiet
+#else
+#define QUIET_PARAM
+#endif
+
+#ifdef RELEASE_MODE_release
+#define SELP_PARAM SELP_ENABLE=20170000
+#else
+#define SELP_PARAM SELP_ENABLE=20102011
+#endif
+
+#ifdef TRACING_MODE
+#define TRACING_PARAM TRACING_STR
+#else
+#define TRACING_PARAM
+#endif
+
+#ifdef ROOT_MODE
+#define ROOT_PARAM rootflags=dncs
+#else
+#define ROOT_PARAM
+#endif
+
+/{
+bootmodes {
+	shift_s_boot_subs: shift_s_boot_subs {
+		/* Lengths of params should be exactly the same */
+		param_old = "init=/sbin/init";
+		param_new = "init=/bin/sh -s";
+	};
+
+	tracing_boot_subs: tracing_boot_subs {
+		/* param_old is empty, that means we find free place for new str */
+		param_new = __STR__(TRACING_STR);
+	};
+
+	/* use shell as init process, 'shift+s' should be pressed */
+	shift_s_mode: shift_s_mode {
+		key  = "S";
+		subs = <&shift_s_boot_subs>;
+	};
+
+	/* use tracing options, 'shift+t' should be pressed */
+	normal_trace_mode: normal_trace_mode {
+		key  = "T";
+		subs = <&tracing_boot_subs>;
+	};
+
+	/* use shell as init and use tracing options, 't' should be pressed */
+	shift_s_trace_mode: shift_s_trace_mode {
+		key  = "t";
+		subs = <&shift_s_boot_subs>, <&tracing_boot_subs>;
+	};
+};
+};
+
+#endif /* NVT_BOOTARGS_DTSI */

@@ -1,0 +1,59 @@
+#!/bin/sh
+overlay_files()
+{
+	if [ ! -f /mnt/overlay_rw0/rootfs/.fileexisted ]; then
+		mkdir /mnt/overlay_rw0/rootfs
+		cp -arf /etc /mnt/overlay_rw0/rootfs
+		cp -arf /var /mnt/overlay_rw0/rootfs
+		mkdir /mnt/overlay_rw0/rootfs/lib
+		cp -arf /lib/modules /mnt/overlay_rw0/rootfs/lib/modules
+		sync;
+		touch /mnt/overlay_rw0/rootfs/.fileexisted
+		sync;
+	fi
+	mount /mnt/overlay_rw0/rootfs/etc /etc
+	mount /mnt/overlay_rw0/rootfs/var /var
+	mount /mnt/overlay_rw0/rootfs/lib/modules /lib/modules
+}
+
+chk_fail()
+{
+	if [ $1 != 0 ]; then
+		echo "r/w partition fail"
+		uctrl usys -rootfs_broken
+		exit -1;
+	fi
+}
+
+echo "/sbin/mdev" > /proc/sys/kernel/hotplug
+mdev -s
+
+if [ "$NVT_ROOTFS_TYPE" == "NVT_ROOTFS_TYPE_NAND_UBI" ]; then
+	num=`cat /proc/mtd | grep rootfs1 | awk -F' ' '{print $1}' | tr -d 'mtd' | tr -d ':'`;
+	if [ ! -z "$num" ]; then
+		ubiattach /dev/ubi_ctrl -m $num
+		ret=$?; chk_fail $ret
+		x=0
+		timeout=5
+		while [ "$x" -lt "$timeout" -a ! -e /dev/ubi1_0 ]; do
+			x=$((x+1))
+			sleep .1
+		done
+		if [ "$x" -ge "$timeout" ]; then
+			echo "It can't find /dev/ubi1_0 device"
+			exit -1
+		fi
+		mount -t ubifs /dev/ubi1_0 /mnt/overlay_rw0
+		ret=$?; chk_fail $ret
+		overlay_files;
+	fi
+elif [ "$NVT_ROOTFS_TYPE" == "NVT_ROOTFS_TYPE_NAND_JFFS2" ]; then
+	num=`cat /proc/mtd | grep rootfs1 | awk -F' ' '{print $1}' | tr -d 'mtd' | tr -d ':'`;
+	if [ ! -z "$num" ]; then
+		mount -t jffs2 /dev/mtdblock$num /mnt/overlay_rw0
+		ret=$?; chk_fail $ret
+		overlay_files;
+	fi
+else
+	echo "Only R/O rootfs partition found."
+fi

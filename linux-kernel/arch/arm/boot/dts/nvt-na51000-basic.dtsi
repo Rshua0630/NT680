@@ -1,0 +1,61 @@
+/*
+ * Novatek Ltd. NA51000 BSP part of dts
+ *
+ * Cortex-A53 MPCore
+ *
+ */
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+/ {
+	model = "Novatek NA51000";
+	compatible = "novatek,na51000", "nvt,ca53";
+	interrupt-parent = <&gic>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a7";
+			reg = <0x0>;
+			next-level-cache = <&L2>;
+			clock-frequency = <12000000>;
+		};
+
+		L2: l2-cache0 {
+			compatible = "cache";
+		};
+
+	};
+
+	timer {
+		compatible = "arm,armv7-timer";
+		interrupts =	<GIC_PPI 13 0xff01>,	/* Secure Phys IRQ */
+				<GIC_PPI 14 0xff01>,	/* Non-secure Phys IRQ */
+				<GIC_PPI 11 0xff01>,	/* Virt IRQ */
+				<GIC_PPI 10 0xff01>;	/* Hyp IRQ */
+		always-on;
+	};
+
+	pmu {
+		compatible = "arm,cortex-a7-pmu";
+		interrupts = <GIC_SPI 213 4>;
+		interrupt-affinity = <&cpu0>;
+	};
+
+	gic: interrupt-controller@0xf1500000 {
+		compatible = "arm,cortex-a7-gic";
+		#interrupt-cells = <3>;
+		interrupt-controller;
+		reg =	<0xf1501000 0x1000>,	/* GIC Dist */
+			<0xf1502000 0x1000>,	/* GIC CPU */
+			<0xf1504000 0x2000>,	/* GIC VCPU Control */
+			<0xf1506000 0x2000>;	/* GIC VCPU */
+		interrupts = <GIC_PPI 9 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;	/* GIC Maintenence IRQ */
+	};
+};

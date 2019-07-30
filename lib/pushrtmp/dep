@@ -1,0 +1,2 @@
+libgmrtmp.o: libgmrtmp.c ../rtmpdump/librtmp/rtmp.h \
+ ../rtmpdump/librtmp/amf.h ../rtmpdump/librtmp/log.h libgmrtmp.h

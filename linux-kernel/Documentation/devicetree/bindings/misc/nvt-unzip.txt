@@ -1,0 +1,17 @@
+Novatek unzip engine
+-----------------------------------------------------
+This binding defines the location of the bounce buffer
+used for non-secure to secure communications.
+
+Required properties:
+- compatible : "nvt,unzip"
+- reg :	register space
+
+Example:
+	unzip@0xfd6f0000 {
+		compatible = "nvt,unzip";
+		compatible = "novatek,nvt-unzip";
+		compatible = "novatek,nvt-unzip-misc";
+		interrupts = <0 97 4>;
+		reg = <0xfd6f0000 0x40>;
+	};

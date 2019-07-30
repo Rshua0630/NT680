@@ -1,0 +1,12 @@
+device_node_create()
+{
+	if [ ! -e /dev/$1 ]; then mknod /dev/$1 c `cat /sys/class/$1/$1/dev | sed "s/:/\ /g"`; fi
+}
+
+modprobe nvt_uctrl
+device_node_create nvt_uctrl
+
+mkdir /var/run/lock
+
+#mkdir /dev/pts
+#mount -t devpts devpts /dev/pts

@@ -1,0 +1,19 @@
+ROOTFS_UBI_SUB_PAGE_SIZE=2048			# Same as page size
+ROOTFS_UBI_PAGE_SIZE=2048			# Nand page size
+ROOTFS_UBI_ERASE_BLK_SIZE=126976		# (64-2) * Page size=126976
+ROOTFS_UBI_MAX_LEB_COUNT=357			# Size = UBI_MAX_LEB_COUNT * UBI_BLK_SIZE; It's calculated by "python ubi_max_leb.py Bytes"
+ROOTFS_UBI_RW_MAX_LEB_COUNT=308			# Size = UBI_MAX_LEB_COUNT * UBI_BLK_SIZE; It's calculated by "python ubi_max_leb.py Bytes"
+ROOTFS_UBI_BLK_SIZE="128KiB"			# UBIFS Nand flash block size (KiB)
+ROOTFS_UBI_COMPRESS_MODE="lzo"			# UBIFS compression type: "lzo", "favor_lzo", "zlib" "none"
+
+ROOTFS_SQ_COMPRESS_MODE="xz"			# Squashfs compression type: "gzip", "lzo" and "xz"
+ROOTFS_SQ_BLK_SIZE="128K"			# Squashfs Nand flash block size (KiB): e.g. spinand: 128K, spinor: 64K
+
+ROOTFS_JFFS2_COMPRESS_MODE="lzo"		# jffs2 compression type: "lzo" "zlib" "rtime"
+ROOTFS_JFFS2_SIZE=0x03200000			# jffs2 partition size: get from /proc/mtd
+ROOTFS_JFFS2_RW_SIZE=0x02DC0000			# jffs2 partition size: get from /proc/mtd
+ROOTFS_JFFS2_BLK_SIZE="128KiB"			# jffs2 block size (KiB): spinand: 128KiB, spinor: 64KiB
+ROOTFS_JFFS2_PAGE_SIZE="2048"			# jffs2 page size (Bytes): only used by nand, nor flash can be ignored.
+
+ROOTFS_EXT4_SIZE=$(shell printf "%d\n" 0x06000000)
+ROOTFS_FAT_CACHE_SIZE=$(shell printf "%d\n" 0x0C800000)

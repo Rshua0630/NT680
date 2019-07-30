@@ -1,0 +1,30 @@
+#!/bin/sh
+
+device_node_create()
+{
+	mknod /dev/$1 c `cat /sys/class/$1/$1/dev | sed "s/:/\ /g"`
+}
+
+nice -n -20 nvtipcd &
+
+# Setup mdev
+echo "fs" > /proc/nvt_info/bootts
+
+# Scan for without insert card
+if [ ! -f /tmp/.nvt_mounts ]; then
+	/etc/mdev-script/autosd.sh
+	rm -rf /tmp/.nvt_mounts;
+fi
+
+echo "fs" > /proc/nvt_info/bootts
+
+sleep .1
+pid=`pidof nvtipcd`
+renice 0 $pid
+
+# System Driver Init
+#modprobe nvt_stream_rcv
+modprobe nvt_stream_snd
+
+
+
